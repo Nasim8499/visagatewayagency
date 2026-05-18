@@ -619,6 +619,8 @@ function StepMap({
   const [snap, setSnap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [testing, setTesting] = useState(false);
+  const [overflowIds, setOverflowIds] = useState<Set<string>>(new Set());
+  const [testReport, setTestReport] = useState<null | { pages: number; overflows: { id: string; label: string }[] }>(null);
 
   // History tracks { fields, tables } together
   type Snap = { fields: DetectedField[]; tables: TableConfig[] };
