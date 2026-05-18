@@ -27,8 +27,6 @@ const navItems: NavItem[] = [
   { to: "/documents/variables", label: "Data Fields", icon: Database },
 ];
 
-// Unused icon imports kept to satisfy tree-shaking-free dead refs (no-op).
-void Files; void PenTool; void QrCode; void Settings; void ClipboardList; void Trash2;
 
 function Logo() {
   return (
