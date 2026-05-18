@@ -10,18 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as EmployersRouteImport } from './routes/employers'
-import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as AgenciesRouteImport } from './routes/agencies'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocumentsIndexRouteImport } from './routes/documents.index'
+import { Route as DocumentsVariablesRouteImport } from './routes/documents.variables'
+import { Route as DocumentsTemplateIdRouteImport } from './routes/documents.$templateId'
 
 const EmployersRoute = EmployersRouteImport.update({
   id: '/employers',
   path: '/employers',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocumentsRoute = DocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgenciesRoute = AgenciesRouteImport.update({
@@ -34,39 +31,81 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocumentsIndexRoute = DocumentsIndexRouteImport.update({
+  id: '/documents/',
+  path: '/documents/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentsVariablesRoute = DocumentsVariablesRouteImport.update({
+  id: '/documents/variables',
+  path: '/documents/variables',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentsTemplateIdRoute = DocumentsTemplateIdRouteImport.update({
+  id: '/documents/$templateId',
+  path: '/documents/$templateId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agencies': typeof AgenciesRoute
-  '/documents': typeof DocumentsRoute
   '/employers': typeof EmployersRoute
+  '/documents/$templateId': typeof DocumentsTemplateIdRoute
+  '/documents/variables': typeof DocumentsVariablesRoute
+  '/documents/': typeof DocumentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agencies': typeof AgenciesRoute
-  '/documents': typeof DocumentsRoute
   '/employers': typeof EmployersRoute
+  '/documents/$templateId': typeof DocumentsTemplateIdRoute
+  '/documents/variables': typeof DocumentsVariablesRoute
+  '/documents': typeof DocumentsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agencies': typeof AgenciesRoute
-  '/documents': typeof DocumentsRoute
   '/employers': typeof EmployersRoute
+  '/documents/$templateId': typeof DocumentsTemplateIdRoute
+  '/documents/variables': typeof DocumentsVariablesRoute
+  '/documents/': typeof DocumentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agencies' | '/documents' | '/employers'
+  fullPaths:
+    | '/'
+    | '/agencies'
+    | '/employers'
+    | '/documents/$templateId'
+    | '/documents/variables'
+    | '/documents/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agencies' | '/documents' | '/employers'
-  id: '__root__' | '/' | '/agencies' | '/documents' | '/employers'
+  to:
+    | '/'
+    | '/agencies'
+    | '/employers'
+    | '/documents/$templateId'
+    | '/documents/variables'
+    | '/documents'
+  id:
+    | '__root__'
+    | '/'
+    | '/agencies'
+    | '/employers'
+    | '/documents/$templateId'
+    | '/documents/variables'
+    | '/documents/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgenciesRoute: typeof AgenciesRoute
-  DocumentsRoute: typeof DocumentsRoute
   EmployersRoute: typeof EmployersRoute
+  DocumentsTemplateIdRoute: typeof DocumentsTemplateIdRoute
+  DocumentsVariablesRoute: typeof DocumentsVariablesRoute
+  DocumentsIndexRoute: typeof DocumentsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -76,13 +115,6 @@ declare module '@tanstack/react-router' {
       path: '/employers'
       fullPath: '/employers'
       preLoaderRoute: typeof EmployersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/documents': {
-      id: '/documents'
-      path: '/documents'
-      fullPath: '/documents'
-      preLoaderRoute: typeof DocumentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agencies': {
@@ -99,14 +131,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/documents/': {
+      id: '/documents/'
+      path: '/documents'
+      fullPath: '/documents/'
+      preLoaderRoute: typeof DocumentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documents/variables': {
+      id: '/documents/variables'
+      path: '/documents/variables'
+      fullPath: '/documents/variables'
+      preLoaderRoute: typeof DocumentsVariablesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documents/$templateId': {
+      id: '/documents/$templateId'
+      path: '/documents/$templateId'
+      fullPath: '/documents/$templateId'
+      preLoaderRoute: typeof DocumentsTemplateIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgenciesRoute: AgenciesRoute,
-  DocumentsRoute: DocumentsRoute,
   EmployersRoute: EmployersRoute,
+  DocumentsTemplateIdRoute: DocumentsTemplateIdRoute,
+  DocumentsVariablesRoute: DocumentsVariablesRoute,
+  DocumentsIndexRoute: DocumentsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
