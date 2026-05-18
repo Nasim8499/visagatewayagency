@@ -673,10 +673,13 @@ function StepMap({
 
   const testGenerate = async () => {
     setTesting(true);
-    // Render a temporary preview offscreen with mock data and export
-    const wrap = document.createElement("div");
-    wrap.style.cssText = "position:fixed;left:-9999px;top:0;width:600px;background:#fff;";
-    document.body.appendChild(wrap);
+    // 1) Validate pagination/overflow before exporting.
+    const positioned = hist.state.fields.filter((f) => isPositionable(f.type));
+    const overflows = positioned
+      .filter((f) => f.bbox.x + f.bbox.w > 100.5 || f.bbox.y + f.bbox.h > 100.5 || f.bbox.x < 0 || f.bbox.y < 0)
+      .map((f) => ({ id: f.id, label: f.label }));
+    setOverflowIds(new Set(overflows.map((o) => o.id)));
+
     const mock: Record<string, string> = {
       FULL_NAME: "Test Applicant", PASSPORT_NUMBER: "X00000000", DATE_OF_BIRTH: "1990-01-01",
       NATIONALITY: "Bangladeshi", EMPLOYER_NAME: "Demo Co. Pte. Ltd.", JOB_TITLE: "Sample Role",
@@ -684,8 +687,7 @@ function StepMap({
       ISSUE_DATE: "2026-05-18", EXPIRY_DATE: "2028-05-17",
     };
     try {
-      // Use ReactDOM unstable batched render is overkill — instead, leverage existing preview pages via DOM clone.
-      // Simpler: re-export current visible preview pages.
+      // Re-export current visible preview pages.
       const visible = document.querySelectorAll<HTMLDivElement>("[data-doc-page]");
       const pdf = new jsPDF({ unit: "mm", format: "a4" });
       const w = pdf.internal.pageSize.getWidth();
@@ -699,11 +701,14 @@ function StepMap({
         pdf.addImage(img, "PNG", 0, 0, w, Math.min(imgH, h));
       }
       pdf.save(`VisaHOBe-TEST-${Date.now()}.pdf`);
-      if (savedId) appendAudit(savedId, { type: "test_generated", message: `Test PDF generated (${pages.length} pages)`, meta: { pages: pages.length } });
+      setTestReport({ pages: pages.length, overflows });
+      if (savedId) appendAudit(savedId, {
+        type: "test_generated",
+        message: `Test PDF generated (${pages.length} pages, ${overflows.length} overflow${overflows.length === 1 ? "" : "s"})`,
+        meta: { pages: pages.length, overflows: overflows.length },
+      });
     } finally {
-      document.body.removeChild(wrap);
       setTesting(false);
-      // suppress unused mock warning
       void mock;
     }
   };
