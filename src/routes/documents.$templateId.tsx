@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { GlassCard, PageHeader } from "@/components/ui-bits";
-import { templates, type TemplateField } from "@/lib/templates";
+import { templates, type TemplateField, type Template } from "@/lib/templates";
 import {
   ArrowLeft, Wand2, Download, FileText, Type, Calendar, Hash,
   Image as ImageIcon, QrCode, Barcode, PenTool, Sparkles, CheckCircle2,

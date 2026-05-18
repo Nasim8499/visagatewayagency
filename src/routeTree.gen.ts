@@ -32,9 +32,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentsIndexRoute = DocumentsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DocumentsRoute,
+  id: '/documents/',
+  path: '/documents/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentsVariablesRoute = DocumentsVariablesRouteImport.update({
   id: '/documents/variables',
@@ -105,6 +105,7 @@ export interface RootRouteChildren {
   EmployersRoute: typeof EmployersRoute
   DocumentsTemplateIdRoute: typeof DocumentsTemplateIdRoute
   DocumentsVariablesRoute: typeof DocumentsVariablesRoute
+  DocumentsIndexRoute: typeof DocumentsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -132,10 +133,10 @@ declare module '@tanstack/react-router' {
     }
     '/documents/': {
       id: '/documents/'
-      path: '/'
+      path: '/documents'
       fullPath: '/documents/'
       preLoaderRoute: typeof DocumentsIndexRouteImport
-      parentRoute: typeof DocumentsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/documents/variables': {
       id: '/documents/variables'
@@ -160,17 +161,8 @@ const rootRouteChildren: RootRouteChildren = {
   EmployersRoute: EmployersRoute,
   DocumentsTemplateIdRoute: DocumentsTemplateIdRoute,
   DocumentsVariablesRoute: DocumentsVariablesRoute,
+  DocumentsIndexRoute: DocumentsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
