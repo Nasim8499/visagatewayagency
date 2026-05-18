@@ -735,18 +735,18 @@ function StepMap({
         <div className="space-y-3 max-h-[80vh] overflow-y-auto pr-1">
           <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground px-1">AI Detection Review</div>
           <AnimatePresence>
-            {fields.map((f) => (
+            {liveFields.map((f) => (
               <FieldRow key={f.id} field={f}
-                onChange={(nf) => updateFields(fields.map((x) => x.id === f.id ? nf : x))}
-                onRemove={() => updateFields(fields.filter((x) => x.id !== f.id))}
+                onChange={(nf) => updateFields(liveFields.map((x) => x.id === f.id ? nf : x))}
+                onRemove={() => updateFields(liveFields.filter((x) => x.id !== f.id))}
                 onRedetect={() => redetect(f.id)}
               />
             ))}
           </AnimatePresence>
           {tableFields.map((tf) => {
-            const tcfg = tables.find((t) => t.fieldId === tf.id);
+            const tcfg = liveTables.find((t) => t.fieldId === tf.id);
             if (!tcfg) return null;
-            return <TableEditor key={tf.id} table={tcfg} onChange={(nt) => updateTables(tables.map((t) => t.fieldId === nt.fieldId ? nt : t))} />;
+            return <TableEditor key={tf.id} table={tcfg} onChange={(nt) => updateTables(liveTables.map((t) => t.fieldId === nt.fieldId ? nt : t))} />;
           })}
         </div>
 
@@ -756,7 +756,7 @@ function StepMap({
               <Move className="h-3.5 w-3.5" /> Drag-and-Drop Layout Editor
             </div>
             <div data-doc-pages>
-              <PreviewWithTags fields={fields} tables={tables} editable onMove={onMove} snap={snap} showGrid={showGrid} />
+              <PreviewWithTags fields={liveFields} tables={liveTables} editable onMove={onMove} snap={snap} showGrid={showGrid} />
             </div>
             <div className="text-[10.5px] text-muted-foreground mt-2 flex items-center gap-1">
               <AlertCircle className="h-3 w-3" /> Drag items to reposition · cyan guides = alignment · pink = page center · ⌘Z to undo
