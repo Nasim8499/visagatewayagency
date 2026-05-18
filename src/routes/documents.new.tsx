@@ -537,12 +537,12 @@ function DocumentPage({
 }
 
 function DocumentRender({
-  fields, tables, applicant = {}, editable, onMove, pageRefs, snap, showGrid,
+  fields, tables, applicant = {}, editable, onMove, pageRefs, snap, showGrid, overflowIds,
 }: {
   fields: DetectedField[]; tables: TableConfig[]; applicant?: Record<string, string>;
   editable?: boolean; onMove?: (id: string, x: number, y: number) => void;
   pageRefs?: React.MutableRefObject<(HTMLDivElement | null)[]>;
-  snap?: boolean; showGrid?: boolean;
+  snap?: boolean; showGrid?: boolean; overflowIds?: Set<string>;
 }) {
   const tableField = fields.find((f) => f.type === "table");
   const table = tableField ? tables.find((t) => t.fieldId === tableField.id) : undefined;
@@ -568,6 +568,7 @@ function DocumentRender({
             onMove={onMove}
             snap={snap}
             showGrid={showGrid}
+            overflowIds={overflowIds}
             refEl={(el) => { if (pageRefs) pageRefs.current[i] = el; }}
           />
         );
