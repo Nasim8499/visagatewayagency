@@ -13,6 +13,7 @@ import { Route as EmployersRouteImport } from './routes/employers'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as AgenciesRouteImport } from './routes/agencies'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocumentsIndexRouteImport } from './routes/documents.index'
 
 const EmployersRoute = EmployersRouteImport.update({
   id: '/employers',
@@ -34,38 +35,51 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocumentsIndexRoute = DocumentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DocumentsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agencies': typeof AgenciesRoute
-  '/documents': typeof DocumentsRoute
+  '/documents': typeof DocumentsRouteWithChildren
   '/employers': typeof EmployersRoute
+  '/documents/': typeof DocumentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agencies': typeof AgenciesRoute
-  '/documents': typeof DocumentsRoute
   '/employers': typeof EmployersRoute
+  '/documents': typeof DocumentsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agencies': typeof AgenciesRoute
-  '/documents': typeof DocumentsRoute
+  '/documents': typeof DocumentsRouteWithChildren
   '/employers': typeof EmployersRoute
+  '/documents/': typeof DocumentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agencies' | '/documents' | '/employers'
+  fullPaths: '/' | '/agencies' | '/documents' | '/employers' | '/documents/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agencies' | '/documents' | '/employers'
-  id: '__root__' | '/' | '/agencies' | '/documents' | '/employers'
+  to: '/' | '/agencies' | '/employers' | '/documents'
+  id:
+    | '__root__'
+    | '/'
+    | '/agencies'
+    | '/documents'
+    | '/employers'
+    | '/documents/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgenciesRoute: typeof AgenciesRoute
-  DocumentsRoute: typeof DocumentsRoute
+  DocumentsRoute: typeof DocumentsRouteWithChildren
   EmployersRoute: typeof EmployersRoute
 }
 
@@ -99,15 +113,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/documents/': {
+      id: '/documents/'
+      path: '/'
+      fullPath: '/documents/'
+      preLoaderRoute: typeof DocumentsIndexRouteImport
+      parentRoute: typeof DocumentsRoute
+    }
   }
 }
+
+interface DocumentsRouteChildren {
+  DocumentsIndexRoute: typeof DocumentsIndexRoute
+}
+
+const DocumentsRouteChildren: DocumentsRouteChildren = {
+  DocumentsIndexRoute: DocumentsIndexRoute,
+}
+
+const DocumentsRouteWithChildren = DocumentsRoute._addFileChildren(
+  DocumentsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgenciesRoute: AgenciesRoute,
-  DocumentsRoute: DocumentsRoute,
+  DocumentsRoute: DocumentsRouteWithChildren,
   EmployersRoute: EmployersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
