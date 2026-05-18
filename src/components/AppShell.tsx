@@ -2,13 +2,13 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, FileText, FilePlus2, Files, Library, FolderTree,
   Database, PenTool, QrCode, Settings, UsersRound, ClipboardList, Trash2,
-  Bell, Plane, Rocket, ChevronDown, Menu, X, HardHat,
+  Bell, Plane, Rocket, ChevronDown, Home, User, Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 type NavItem = {
-  to: "/" | "/employers" | "/agencies" | "/workers" | "/documents" | "/documents/variables" | "/documents/saved";
+  to: "/" | "/employers" | "/agencies" | "/documents" | "/documents/variables";
   label: string;
   icon: typeof LayoutDashboard;
   exact?: boolean;
@@ -16,17 +16,16 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/workers", label: "Workers", icon: HardHat },
-  { to: "/employers", label: "Employers", icon: FolderTree },
-  { to: "/agencies", label: "Agencies", icon: UsersRound },
   { to: "/documents", label: "Templates", icon: FileText, exact: true },
-  { to: "/documents/saved", label: "Saved Library", icon: Library },
   { to: "/documents", label: "Create Document", icon: FilePlus2 },
   { to: "/documents", label: "Documents", icon: Files },
+  { to: "/documents", label: "Template Library", icon: Library },
+  { to: "/employers", label: "Categories", icon: FolderTree },
   { to: "/documents/variables", label: "Data Fields", icon: Database },
   { to: "/agencies", label: "Page Designer", icon: PenTool },
   { to: "/documents/variables", label: "QR / Barcode", icon: QrCode },
   { to: "/employers", label: "Settings", icon: Settings },
+  { to: "/agencies", label: "Team Access", icon: UsersRound },
   { to: "/documents", label: "Activity Log", icon: ClipboardList },
   { to: "/documents", label: "Trash", icon: Trash2 },
 ];
@@ -49,7 +48,7 @@ function Logo() {
   );
 }
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
@@ -61,14 +60,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="flex-1 overflow-y-auto px-3 pb-3">
         {navItems.map(({ to, label, icon: Icon, exact }, i) => {
           const active = exact ? pathname === to : pathname === to;
-          const isTemplates = label === "Templates" && pathname.startsWith("/documents") && !pathname.includes("variables") && !pathname.includes("saved");
-          const isSaved = label === "Saved Library" && pathname === "/documents/saved";
-          const isActive = active || isTemplates || isSaved;
+          // Mark "Templates" as active when on /documents
+          const isTemplates = label === "Templates" && pathname.startsWith("/documents") && !pathname.includes("variables");
+          const isActive = active || isTemplates;
           return (
             <Link
               key={`${label}-${i}`}
               to={to}
-              onClick={onNavigate}
               className={`relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-all mb-0.5 ${
                 isActive
                   ? "bg-white text-[oklch(0.24_0.08_258)] shadow-sm"
@@ -82,6 +80,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </nav>
 
+      {/* Upgrade card */}
       <div className="px-3 pb-3">
         <div className="rounded-2xl p-4 bg-white/[0.05] border border-white/[0.08]">
           <div className="flex items-start gap-2 mb-2">
@@ -101,6 +100,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
+      {/* Profile card */}
       <div className="px-3 pb-4">
         <div className="rounded-2xl p-2.5 bg-white/[0.05] border border-white/[0.08] flex items-center gap-3">
           <div className="h-9 w-9 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 flex items-center justify-center font-bold text-white text-xs ring-2 ring-white/20">
@@ -119,13 +119,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 const pageTitleMap: Record<string, string> = {
   "/": "Dashboard",
-  "/workers": "Workers",
   "/employers": "Employers",
   "/agencies": "Partner Agencies",
   "/documents": "Templates",
   "/documents/variables": "Data Fields",
-  "/documents/saved": "Saved Library",
-  "/documents/new": "Smart Template",
 };
 
 function getTitle(path: string) {
@@ -134,20 +131,13 @@ function getTitle(path: string) {
   return "VisaHOBe";
 }
 
-function MobileHeader({ onMenu }: { onMenu: () => void }) {
+function MobileHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const title = getTitle(pathname);
 
   return (
     <header className="md:hidden sticky top-0 z-40 bg-[var(--navy)] text-white">
-      <div className="flex items-center justify-between px-3 h-14 gap-2">
-        <button
-          onClick={onMenu}
-          aria-label="Open menu"
-          className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/15 active:scale-95 transition shrink-0"
-        >
-          <Menu className="h-[20px] w-[20px]" />
-        </button>
+      <div className="flex items-center justify-between px-4 h-14 gap-3">
         <Link to="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg gradient-red flex items-center justify-center">
             <Plane className="h-4 w-4 text-white -rotate-45" strokeWidth={2.5} />
@@ -165,7 +155,7 @@ function MobileHeader({ onMenu }: { onMenu: () => void }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.18 }}
-              className="font-display font-bold text-[14px] truncate"
+              className="font-display font-bold text-[15px] truncate"
             >
               {title}
             </motion.div>
@@ -185,88 +175,61 @@ function MobileHeader({ onMenu }: { onMenu: () => void }) {
   );
 }
 
-function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open, onClose]);
+function MobileBottomNav() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const tabs: { to: "/" | "/documents" | "/employers"; label: string; icon: typeof Home; match: (p: string) => boolean }[] = [
+    { to: "/", label: "Home", icon: Home, match: (p) => p === "/" },
+    { to: "/documents", label: "Templates", icon: FileText, match: (p) => p.startsWith("/documents") && !p.includes("variables") },
+  ];
+  const right: { to: "/documents/variables" | "/employers"; label: string; icon: typeof Home; match: (p: string) => boolean }[] = [
+    { to: "/documents/variables", label: "Documents", icon: Files, match: (p) => p.includes("variables") },
+    { to: "/employers", label: "Profile", icon: User, match: (p) => p === "/employers" || p === "/agencies" },
+  ];
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            onClick={onClose}
-            className="md:hidden fixed inset-0 z-50 bg-black/55 backdrop-blur-[3px]"
-          />
-          <motion.aside
-            initial={{ x: "-100%", opacity: 0.4 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "-100%", opacity: 0.4 }}
-            transition={{ type: "spring", damping: 32, stiffness: 320, mass: 0.9 }}
-            className="md:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] shadow-2xl"
-          >
-            <motion.button
-              onClick={onClose}
-              aria-label="Close menu"
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.15, duration: 0.25 }}
-              className="absolute top-4 right-3 z-10 h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
-            >
-              <X className="h-4 w-4" />
-            </motion.button>
-            <SidebarContent onNavigate={onClose} />
-          </motion.aside>
-        </>
-      )}
-    </AnimatePresence>
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-border h-[68px] flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom)]">
+      {tabs.map((t) => {
+        const active = t.match(pathname);
+        return (
+          <Link key={t.label} to={t.to} className="flex flex-col items-center justify-center gap-1 px-3 py-1.5 min-w-[56px]">
+            <t.icon className={`h-[22px] w-[22px] ${active ? "text-[var(--navy)]" : "text-muted-foreground"}`} strokeWidth={active ? 2.4 : 2} />
+            <span className={`text-[10px] font-semibold ${active ? "text-[var(--navy)]" : "text-muted-foreground"}`}>{t.label}</span>
+          </Link>
+        );
+      })}
+      <Link
+        to="/documents"
+        className="-mt-8 h-14 w-14 rounded-full gradient-red flex items-center justify-center shadow-[var(--shadow-glow)] ring-4 ring-white"
+        aria-label="Create"
+      >
+        <Plus className="h-6 w-6 text-white" strokeWidth={2.6} />
+      </Link>
+      {right.map((t) => {
+        const active = t.match(pathname);
+        return (
+          <Link key={t.label} to={t.to} className="flex flex-col items-center justify-center gap-1 px-3 py-1.5 min-w-[56px]">
+            <t.icon className={`h-[22px] w-[22px] ${active ? "text-[var(--navy)]" : "text-muted-foreground"}`} strokeWidth={active ? 2.4 : 2} />
+            <span className={`text-[10px] font-semibold ${active ? "text-[var(--navy)]" : "text-muted-foreground"}`}>{t.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
-const DRAWER_KEY = "vh.drawer.open";
-
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // Lazy initializer reads sessionStorage so the drawer's last state is remembered per session.
-  const [menuOpen, setMenuOpen] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    try { return window.sessionStorage.getItem(DRAWER_KEY) === "1"; } catch { return false; }
-  });
-
-  // Persist drawer state per session
-  useEffect(() => {
-    try { window.sessionStorage.setItem(DRAWER_KEY, menuOpen ? "1" : "0"); } catch { /* noop */ }
-  }, [menuOpen]);
-
-  // Auto-close drawer after route change (don't close on every render — only when path changes)
-  useEffect(() => {
-    setMenuOpen(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
 
   return (
     <div className="min-h-screen">
+      {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 z-30 w-[260px] flex-col">
         <SidebarContent />
       </aside>
 
-      <MobileDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
-
       <div className="md:ml-[260px] flex flex-col min-h-screen">
-        <MobileHeader onMenu={() => setMenuOpen((v) => !v)} />
-        <main className="flex-1 px-4 md:px-8 py-5 md:py-8">
+        <MobileHeader />
+        <main className="flex-1 px-4 md:px-8 py-5 md:py-8 pb-[96px] md:pb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
@@ -279,6 +242,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </motion.div>
           </AnimatePresence>
         </main>
+        <MobileBottomNav />
       </div>
     </div>
   );

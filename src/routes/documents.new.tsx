@@ -7,11 +7,10 @@ import {
   Type, Table as TableIcon, QrCode, Barcode, PenLine, Image as ImageIcon,
   Layers, ShieldCheck, Download, Plus, Trash2, Eye, Wand2, FileCheck2,
   Cloud, AlertCircle, CheckCircle2, RefreshCw, Move, Save, Zap, History,
-  Undo2, Redo2, Grid3x3, PlayCircle,
 } from "lucide-react";
 import { allVariables } from "@/lib/templates";
 import {
-  saveNewTemplate, saveNewVersion, getTemplate, getVersion, appendAudit,
+  saveNewTemplate, saveNewVersion, getTemplate, getVersion,
   type SavedField, type SavedTable,
 } from "@/lib/savedTemplates";
 import jsPDF from "jspdf";
@@ -361,15 +360,13 @@ function renderFieldVisual(f: DetectedField, applicant: Record<string, string>) 
 
 // One A4 page rendering with absolute positioning + table chunk
 function DocumentPage({
-  fields, table, applicant, tableSlice, isFirstPage, totalPages, pageNum, editable, onMove, refEl, snap, showGrid, overflowIds,
+  fields, table, applicant, tableSlice, isFirstPage, totalPages, pageNum, editable, onMove, refEl,
 }: {
   fields: DetectedField[]; table?: TableConfig; applicant: Record<string, string>;
   tableSlice: Record<string, string>[]; isFirstPage: boolean; totalPages: number; pageNum: number;
   editable?: boolean; onMove?: (id: string, x: number, y: number) => void; refEl?: React.Ref<HTMLDivElement>;
-  snap?: boolean; showGrid?: boolean; overflowIds?: Set<string>;
 }) {
   const paperRef = useRef<HTMLDivElement>(null);
-  const [guides, setGuides] = useState<{ v?: number; h?: number; cv?: boolean; ch?: boolean }>({});
   const positioned = fields.filter((f) => isPositionable(f.type));
   const textFields = fields.filter((f) => ["text", "date", "number"].includes(f.type));
   const tableField = fields.find((f) => f.type === "table");
@@ -379,39 +376,12 @@ function DocumentPage({
     e.preventDefault();
     const paper = paperRef.current; if (!paper) return;
     const rect = paper.getBoundingClientRect();
-    const SNAP_STEP = 2; // % grid
-    const GUIDE_TOL = 1.2; // %
-    const others = positioned.filter((p) => p.id !== id);
-
     const move = (ev: PointerEvent) => {
-      let nx = ((ev.clientX - rect.left) / rect.width) * 100 - 5;
-      let ny = ((ev.clientY - rect.top) / rect.height) * 100 - 3;
-      nx = Math.max(0, Math.min(95, nx));
-      ny = Math.max(0, Math.min(97, ny));
-
-      // alignment guides — snap to centers/edges of other items + page center
-      const targetsX = [50 - 0, ...others.map((o) => o.bbox.x), ...others.map((o) => o.bbox.x + o.bbox.w / 2)];
-      const targetsY = [50, ...others.map((o) => o.bbox.y), ...others.map((o) => o.bbox.y + o.bbox.h / 2)];
-      let vGuide: number | undefined; let hGuide: number | undefined; let cv = false; let ch = false;
-      for (const tx of targetsX) {
-        if (Math.abs(nx - tx) < GUIDE_TOL) { vGuide = tx; nx = tx; if (tx === 50) cv = true; break; }
-      }
-      for (const ty of targetsY) {
-        if (Math.abs(ny - ty) < GUIDE_TOL) { hGuide = ty; ny = ty; if (ty === 50) ch = true; break; }
-      }
-
-      if (snap) {
-        nx = Math.round(nx / SNAP_STEP) * SNAP_STEP;
-        ny = Math.round(ny / SNAP_STEP) * SNAP_STEP;
-      }
-      setGuides({ v: vGuide, h: hGuide, cv, ch });
-      onMove?.(id, nx, ny);
+      const nx = ((ev.clientX - rect.left) / rect.width) * 100;
+      const ny = ((ev.clientY - rect.top) / rect.height) * 100;
+      onMove?.(id, Math.max(0, Math.min(95, nx - 5)), Math.max(0, Math.min(97, ny - 3)));
     };
-    const up = () => {
-      setGuides({});
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-    };
+    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
   };
@@ -439,7 +409,7 @@ function DocumentPage({
         <div className="text-[9px] font-mono opacity-70">PAGE {pageNum} / {totalPages}</div>
       </div>
 
-      {/* Body */}
+      {/* Body — text fields rendered as grid only on first page; tables flow; positioned items absolute */}
       <div className="px-6 pt-4 relative" style={{ minHeight: "calc(100% - 40px)" }}>
         {isFirstPage && (
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10.5px] mt-8">
@@ -478,71 +448,41 @@ function DocumentPage({
           </div>
         )}
 
-        {/* Grid overlay (editable) */}
-        {editable && showGrid && (
+        {/* Absolute positioned: header/footer/watermark/QR/barcode/signature/image */}
+        {positioned.map((f) => (
           <div
-            className="absolute inset-0 pointer-events-none"
+            key={f.id}
+            onPointerDown={(e) => onDragStart(e, f.id)}
             style={{
-              backgroundImage:
-                "linear-gradient(to right, rgba(21,42,77,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(21,42,77,0.06) 1px, transparent 1px)",
-              backgroundSize: "5% 5%",
+              position: "absolute",
+              left: `${f.bbox.x}%`, top: `${f.bbox.y - 10}%`,
+              width: `${f.bbox.w}%`, height: `${f.bbox.h}%`,
+              cursor: editable ? "grab" : "default",
+              touchAction: "none",
             }}
-          />
-        )}
-
-        {/* Alignment guides */}
-        {editable && guides.v !== undefined && (
-          <div className={`absolute top-0 bottom-0 w-px pointer-events-none ${guides.cv ? "bg-rose-500" : "bg-cyan-500"}`} style={{ left: `${guides.v}%` }} />
-        )}
-        {editable && guides.h !== undefined && (
-          <div className={`absolute left-0 right-0 h-px pointer-events-none ${guides.ch ? "bg-rose-500" : "bg-cyan-500"}`} style={{ top: `${guides.h - 10}%` }} />
-        )}
-
-        {/* Absolute positioned items */}
-        {positioned.map((f) => {
-          const isOverflow = overflowIds?.has(f.id);
-          return (
-            <div
-              key={f.id}
-              data-field-id={f.id}
-              onPointerDown={(e) => onDragStart(e, f.id)}
-              style={{
-                position: "absolute",
-                left: `${f.bbox.x}%`, top: `${f.bbox.y - 10}%`,
-                width: `${f.bbox.w}%`, height: `${f.bbox.h}%`,
-                cursor: editable ? "grab" : "default",
-                touchAction: "none",
-                boxShadow: isOverflow ? "0 0 0 2px #e11d48, 0 0 0 6px rgba(225,29,72,0.18)" : undefined,
-                animation: isOverflow ? "pulse 1.4s ease-in-out infinite" : undefined,
-              }}
-              className={editable ? "outline-dashed outline-1 outline-[var(--navy)]/40 hover:outline-[var(--navy)] rounded-sm transition-colors" : ""}
-            >
-              <div className="w-full h-full flex items-center justify-center pointer-events-none">
-                {renderFieldVisual(f, applicant)}
-              </div>
-              {editable && (
-                <div
-                  className="absolute -top-4 left-0 text-[8px] font-bold px-1 rounded pointer-events-none"
-                  style={{ color: isOverflow ? "#e11d48" : undefined, background: isOverflow ? "#fff1f2" : "rgba(255,255,255,0.9)" }}
-                >
-                  {isOverflow ? "⚠ " : ""}{f.label}
-                </div>
-              )}
+            className={editable ? "outline-dashed outline-1 outline-[var(--navy)]/40 hover:outline-[var(--navy)] rounded-sm" : ""}
+          >
+            <div className="w-full h-full flex items-center justify-center pointer-events-none">
+              {renderFieldVisual(f, applicant)}
             </div>
-          );
-        })}
+            {editable && (
+              <div className="absolute -top-4 left-0 text-[8px] font-bold text-[var(--navy)] bg-white/90 px-1 rounded pointer-events-none">
+                {f.label}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
 function DocumentRender({
-  fields, tables, applicant = {}, editable, onMove, pageRefs, snap, showGrid, overflowIds,
+  fields, tables, applicant = {}, editable, onMove, pageRefs,
 }: {
   fields: DetectedField[]; tables: TableConfig[]; applicant?: Record<string, string>;
   editable?: boolean; onMove?: (id: string, x: number, y: number) => void;
   pageRefs?: React.MutableRefObject<(HTMLDivElement | null)[]>;
-  snap?: boolean; showGrid?: boolean; overflowIds?: Set<string>;
 }) {
   const tableField = fields.find((f) => f.type === "table");
   const table = tableField ? tables.find((t) => t.fieldId === tableField.id) : undefined;
@@ -566,9 +506,6 @@ function DocumentRender({
             pageNum={i + 1}
             editable={editable && i === 0}
             onMove={onMove}
-            snap={snap}
-            showGrid={showGrid}
-            overflowIds={overflowIds}
             refEl={(el) => { if (pageRefs) pageRefs.current[i] = el; }}
           />
         );
@@ -577,140 +514,27 @@ function DocumentRender({
   );
 }
 
-function useHistory<T>(initial: T): {
-  state: T; set: (next: T, record?: boolean) => void; undo: () => void; redo: () => void;
-  canUndo: boolean; canRedo: boolean; reset: (v: T) => void;
-} {
-  const [past, setPast] = useState<T[]>([]);
-  const [present, setPresent] = useState<T>(initial);
-  const [future, setFuture] = useState<T[]>([]);
-  const set = (next: T, record = true) => {
-    if (record) { setPast((p) => [...p.slice(-49), present]); setFuture([]); }
-    setPresent(next);
-  };
-  const undo = () => {
-    if (past.length === 0) return;
-    const prev = past[past.length - 1];
-    setPast((p) => p.slice(0, -1));
-    setFuture((f) => [present, ...f]);
-    setPresent(prev);
-  };
-  const redo = () => {
-    if (future.length === 0) return;
-    const next = future[0];
-    setFuture((f) => f.slice(1));
-    setPast((p) => [...p, present]);
-    setPresent(next);
-  };
-  const reset = (v: T) => { setPast([]); setFuture([]); setPresent(v); };
-  return { state: present, set, undo, redo, canUndo: past.length > 0, canRedo: future.length > 0, reset };
-}
-
 function StepMap({
-  fields, setFields, tables, setTables, onNext, onBack, onSave, savedName, isExisting, savedId,
+  fields, setFields, tables, setTables, onNext, onBack, onSave, savedName, isExisting,
 }: {
   fields: DetectedField[]; setFields: (f: DetectedField[]) => void;
   tables: TableConfig[]; setTables: (t: TableConfig[]) => void;
   onNext: () => void; onBack: () => void;
   onSave: (name: string, asNewVersion: boolean) => void;
-  savedName?: string; isExisting: boolean; savedId?: string;
+  savedName?: string; isExisting: boolean;
 }) {
   const [name, setName] = useState(savedName ?? "Untitled Smart Template");
-  const [snap, setSnap] = useState(true);
-  const [showGrid, setShowGrid] = useState(true);
-  const [testing, setTesting] = useState(false);
-  const [overflowIds, setOverflowIds] = useState<Set<string>>(new Set());
-  const [testReport, setTestReport] = useState<null | { pages: number; overflows: { id: string; label: string }[] }>(null);
+  const bound = fields.filter((f) => f.boundVar).length;
+  const totalBindable = fields.filter((f) => !["header", "footer", "watermark", "table"].includes(f.type)).length;
+  const tableFields = fields.filter((f) => f.type === "table");
+  const lowConf = fields.filter((f) => f.confidence < 0.9).length;
+  const avgConf = Math.round((fields.reduce((s, f) => s + f.confidence, 0) / Math.max(fields.length, 1)) * 100);
 
-  // History tracks { fields, tables } together
-  type Snap = { fields: DetectedField[]; tables: TableConfig[] };
-  const hist = useHistory<Snap>({ fields, tables });
-  // Sync external state with history present
-  useEffect(() => { setFields(hist.state.fields); setTables(hist.state.tables); }, [hist.state]);
-  // Reset history when entering with new data
-  useEffect(() => { hist.reset({ fields, tables }); /* eslint-disable-next-line */ }, []);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const fn = (e: KeyboardEvent) => {
-      const mod = e.ctrlKey || e.metaKey;
-      if (!mod) return;
-      if (e.key === "z" && !e.shiftKey) { e.preventDefault(); hist.undo(); }
-      else if ((e.key === "z" && e.shiftKey) || e.key === "y") { e.preventDefault(); hist.redo(); }
-    };
-    window.addEventListener("keydown", fn);
-    return () => window.removeEventListener("keydown", fn);
-  }, [hist]);
-
-  const liveFields = hist.state.fields;
-  const liveTables = hist.state.tables;
-  const updateFields = (next: DetectedField[]) => hist.set({ fields: next, tables: liveTables });
-  const updateTables = (next: TableConfig[]) => hist.set({ fields: liveFields, tables: next });
-
-  const bound = liveFields.filter((f) => f.boundVar).length;
-  const totalBindable = liveFields.filter((f) => !["header", "footer", "watermark", "table"].includes(f.type)).length;
-  const tableFields = liveFields.filter((f) => f.type === "table");
-  const lowConf = liveFields.filter((f) => f.confidence < 0.9).length;
-  const avgConf = Math.round((liveFields.reduce((s, f) => s + f.confidence, 0) / Math.max(liveFields.length, 1)) * 100);
-
-  // Throttle drag history snapshots — record only on drag end. Use ref to coalesce.
-  const dragRecordingRef = useRef<number | null>(null);
   const onMove = (id: string, x: number, y: number) => {
-    const next = hist.state.fields.map((f) => f.id === id ? { ...f, bbox: { ...f.bbox, x, y: y + 10 } } : f);
-    // Suppress history recording for intermediate moves; record once after idle
-    hist.set({ fields: next, tables: hist.state.tables }, false);
-    if (dragRecordingRef.current) window.clearTimeout(dragRecordingRef.current);
-    dragRecordingRef.current = window.setTimeout(() => {
-      hist.set({ fields: next, tables: hist.state.tables }, true);
-      if (savedId) appendAudit(savedId, { type: "field_moved", message: `Repositioned "${next.find((f) => f.id === id)?.label}"`, meta: { id, x: Math.round(x), y: Math.round(y) } });
-    }, 350);
+    setFields(fields.map((f) => f.id === id ? { ...f, bbox: { ...f.bbox, x, y: y + 10 } } : f));
   };
   const redetect = (id: string) => {
-    const next = hist.state.fields.map((f) => f.id === id ? { ...f, confidence: Math.min(0.99, 0.9 + Math.random() * 0.09) } : f);
-    hist.set({ fields: next, tables: hist.state.tables });
-    if (savedId) appendAudit(savedId, { type: "field_redetected", message: `Re-detected "${next.find((f) => f.id === id)?.label}"`, meta: { id } });
-  };
-
-  const testGenerate = async () => {
-    setTesting(true);
-    // 1) Validate pagination/overflow before exporting.
-    const positioned = hist.state.fields.filter((f) => isPositionable(f.type));
-    const overflows = positioned
-      .filter((f) => f.bbox.x + f.bbox.w > 100.5 || f.bbox.y + f.bbox.h > 100.5 || f.bbox.x < 0 || f.bbox.y < 0)
-      .map((f) => ({ id: f.id, label: f.label }));
-    setOverflowIds(new Set(overflows.map((o) => o.id)));
-
-    const mock: Record<string, string> = {
-      FULL_NAME: "Test Applicant", PASSPORT_NUMBER: "X00000000", DATE_OF_BIRTH: "1990-01-01",
-      NATIONALITY: "Bangladeshi", EMPLOYER_NAME: "Demo Co. Pte. Ltd.", JOB_TITLE: "Sample Role",
-      SALARY: "1500", VISA_TYPE: "Work Permit", APPLICATION_ID: "TEST-0001",
-      ISSUE_DATE: "2026-05-18", EXPIRY_DATE: "2028-05-17",
-    };
-    try {
-      // Re-export current visible preview pages.
-      const visible = document.querySelectorAll<HTMLDivElement>("[data-doc-page]");
-      const pdf = new jsPDF({ unit: "mm", format: "a4" });
-      const w = pdf.internal.pageSize.getWidth();
-      const h = pdf.internal.pageSize.getHeight();
-      const pages = Array.from(visible);
-      for (let i = 0; i < pages.length; i++) {
-        const canvas = await html2canvas(pages[i], { scale: 2, backgroundColor: "#ffffff" });
-        const img = canvas.toDataURL("image/png");
-        const imgH = (canvas.height * w) / canvas.width;
-        if (i > 0) pdf.addPage();
-        pdf.addImage(img, "PNG", 0, 0, w, Math.min(imgH, h));
-      }
-      pdf.save(`VisaHOBe-TEST-${Date.now()}.pdf`);
-      setTestReport({ pages: pages.length, overflows });
-      if (savedId) appendAudit(savedId, {
-        type: "test_generated",
-        message: `Test PDF generated (${pages.length} pages, ${overflows.length} overflow${overflows.length === 1 ? "" : "s"})`,
-        meta: { pages: pages.length, overflows: overflows.length },
-      });
-    } finally {
-      setTesting(false);
-      void mock;
-    }
+    setFields(fields.map((f) => f.id === id ? { ...f, confidence: Math.min(0.99, 0.9 + Math.random() * 0.09) } : f));
   };
 
   return (
@@ -727,69 +551,22 @@ function StepMap({
         </div>
       </div>
 
-      {/* Test Generate report banner */}
-      {testReport && (
-        <motion.div
-          initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-          className={`card-surface p-3 md:p-4 border-l-4 flex items-start gap-3 ${testReport.overflows.length > 0 ? "border-rose-500 bg-rose-50/40" : "border-emerald-500 bg-emerald-50/40"}`}
-        >
-          {testReport.overflows.length > 0 ? <AlertCircle className="h-5 w-5 text-rose-600 shrink-0" /> : <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />}
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-[var(--navy)]">
-              {testReport.overflows.length > 0
-                ? `${testReport.overflows.length} field${testReport.overflows.length === 1 ? "" : "s"} overflow the page · ${testReport.pages} page${testReport.pages === 1 ? "" : "s"} rendered`
-                : `Pagination clean · ${testReport.pages} page${testReport.pages === 1 ? "" : "s"} rendered, no overflow detected`}
-            </div>
-            {testReport.overflows.length > 0 && (
-              <div className="text-[11px] text-muted-foreground mt-1">
-                Highlighted in red on the preview — drag them back inside the page bounds before saving a version:{" "}
-                <span className="font-semibold text-rose-700">{testReport.overflows.map((o) => o.label).join(", ")}</span>
-              </div>
-            )}
-          </div>
-          <button onClick={() => { setTestReport(null); setOverflowIds(new Set()); }} className="text-xs text-muted-foreground hover:text-[var(--navy)] shrink-0">
-            <X className="h-4 w-4" />
-          </button>
-        </motion.div>
-      )}
-
-      {/* Editor toolbar */}
-      <div className="card-surface p-2 flex items-center gap-1 flex-wrap">
-        <button onClick={hist.undo} disabled={!hist.canUndo} title="Undo (⌘Z)" className="h-9 px-3 rounded-lg hover:bg-secondary disabled:opacity-30 flex items-center gap-1.5 text-xs font-semibold text-[var(--navy)]">
-          <Undo2 className="h-4 w-4" /> Undo
-        </button>
-        <button onClick={hist.redo} disabled={!hist.canRedo} title="Redo (⌘⇧Z)" className="h-9 px-3 rounded-lg hover:bg-secondary disabled:opacity-30 flex items-center gap-1.5 text-xs font-semibold text-[var(--navy)]">
-          <Redo2 className="h-4 w-4" /> Redo
-        </button>
-        <div className="w-px h-6 bg-border mx-1" />
-        <button onClick={() => setSnap((s) => !s)} className={`h-9 px-3 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition ${snap ? "bg-[var(--navy)] text-white" : "hover:bg-secondary text-[var(--navy)]"}`}>
-          <Grid3x3 className="h-4 w-4" /> Snap {snap ? "On" : "Off"}
-        </button>
-        <button onClick={() => setShowGrid((s) => !s)} className={`h-9 px-3 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition ${showGrid ? "bg-secondary text-[var(--navy)]" : "hover:bg-secondary text-muted-foreground"}`}>
-          <Layers className="h-4 w-4" /> Grid
-        </button>
-        <div className="flex-1" />
-        <button onClick={testGenerate} disabled={testing} className="h-9 px-3 rounded-lg flex items-center gap-1.5 text-xs font-bold bg-[var(--color-success)]/10 text-[var(--color-success)] hover:bg-[var(--color-success)]/20 disabled:opacity-60">
-          {testing ? <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><ScanLine className="h-4 w-4" /></motion.div> Testing…</> : <><PlayCircle className="h-4 w-4" /> Test Generate</>}
-        </button>
-      </div>
-
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="space-y-3 max-h-[80vh] overflow-y-auto pr-1">
           <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground px-1">AI Detection Review</div>
           <AnimatePresence>
-            {liveFields.map((f) => (
+            {fields.map((f) => (
               <FieldRow key={f.id} field={f}
-                onChange={(nf) => updateFields(liveFields.map((x) => x.id === f.id ? nf : x))}
-                onRemove={() => updateFields(liveFields.filter((x) => x.id !== f.id))}
+                onChange={(nf) => setFields(fields.map((x) => x.id === f.id ? nf : x))}
+                onRemove={() => setFields(fields.filter((x) => x.id !== f.id))}
                 onRedetect={() => redetect(f.id)}
               />
             ))}
           </AnimatePresence>
           {tableFields.map((tf) => {
-            const tcfg = liveTables.find((t) => t.fieldId === tf.id);
+            const tcfg = tables.find((t) => t.fieldId === tf.id);
             if (!tcfg) return null;
-            return <TableEditor key={tf.id} table={tcfg} onChange={(nt) => updateTables(liveTables.map((t) => t.fieldId === nt.fieldId ? nt : t))} />;
+            return <TableEditor key={tf.id} table={tcfg} onChange={(nt) => setTables(tables.map((t) => t.fieldId === nt.fieldId ? nt : t))} />;
           })}
         </div>
 
@@ -798,11 +575,9 @@ function StepMap({
             <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3 flex items-center gap-2">
               <Move className="h-3.5 w-3.5" /> Drag-and-Drop Layout Editor
             </div>
-            <div data-doc-pages>
-              <PreviewWithTags fields={liveFields} tables={liveTables} editable onMove={onMove} snap={snap} showGrid={showGrid} overflowIds={overflowIds} />
-            </div>
+            <DocumentRender fields={fields} tables={tables} editable onMove={onMove} />
             <div className="text-[10.5px] text-muted-foreground mt-2 flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" /> Drag items to reposition · cyan guides = alignment · pink = page center · ⌘Z to undo
+              <AlertCircle className="h-3 w-3" /> Drag any QR, barcode, signature, header, footer or watermark on the page to reposition.
             </div>
           </div>
         </div>
@@ -827,17 +602,7 @@ function StepMap({
   );
 }
 
-// Tag every rendered page with data-doc-page so Test Generate can target them.
-function PreviewWithTags(props: React.ComponentProps<typeof DocumentRender>) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!ref.current) return;
-    ref.current.querySelectorAll(":scope > div > div").forEach((el) => el.setAttribute("data-doc-page", "1"));
-  });
-  return <div ref={ref}><DocumentRender {...props} /></div>;
-}
-
-function StepExport({ fields, tables, onBack, savedId }: { fields: DetectedField[]; tables: TableConfig[]; onBack: () => void; savedId?: string }) {
+function StepExport({ fields, tables, onBack }: { fields: DetectedField[]; tables: TableConfig[]; onBack: () => void }) {
   const [applicant, setApplicant] = useState<Record<string, string>>({});
   const [exporting, setExporting] = useState(false);
   const [done, setDone] = useState(false);
@@ -876,7 +641,6 @@ function StepExport({ fields, tables, onBack, savedId }: { fields: DetectedField
         pdf.addImage(img, "PNG", 0, 0, w, Math.min(imgH, h));
       }
       pdf.save(`VisaHOBe-${applicant.FULL_NAME?.replace(/\s+/g, "_") || "document"}-${Date.now()}.pdf`);
-      if (savedId) appendAudit(savedId, { type: "exported", message: `Exported PDF for ${applicant.FULL_NAME || "(unnamed)"}`, meta: { pages: pages.length } });
       setDone(true);
       setTimeout(() => setDone(false), 2500);
     } finally {
@@ -1018,13 +782,13 @@ function NewTemplatePage() {
           <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
             <StepMap fields={fields} setFields={setFields} tables={tables} setTables={setTables}
               onNext={() => setStep(4)} onBack={() => setStep(savedId ? 3 : 2)}
-              onSave={onSave} savedName={savedName} isExisting={Boolean(savedId)} savedId={savedId}
+              onSave={onSave} savedName={savedName} isExisting={Boolean(savedId)}
             />
           </motion.div>
         )}
         {step === 4 && (
           <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-            <StepExport fields={fields} tables={tables} onBack={() => setStep(3)} savedId={savedId} />
+            <StepExport fields={fields} tables={tables} onBack={() => setStep(3)} />
           </motion.div>
         )}
       </AnimatePresence>

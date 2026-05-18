@@ -26,18 +26,6 @@ export type SavedVersion = {
   tables: SavedTable[];
 };
 
-export type AuditEventType =
-  | "created" | "edited" | "renamed" | "duplicated" | "version_saved"
-  | "field_redetected" | "field_moved" | "field_bound" | "field_removed"
-  | "exported" | "test_generated";
-
-export type AuditEvent = {
-  ts: number;
-  type: AuditEventType;
-  message: string;
-  meta?: Record<string, string | number>;
-};
-
 export type SavedTemplate = {
   id: string;
   name: string;
@@ -47,7 +35,6 @@ export type SavedTemplate = {
   updatedAt: number;
   currentVersion: number;
   versions: SavedVersion[];
-  audit?: AuditEvent[];
 };
 
 const KEY = "vh.savedTemplates.v1";
@@ -92,7 +79,6 @@ export function saveNewTemplate(input: {
     updatedAt: now,
     currentVersion: 1,
     versions: [{ v: 1, createdAt: now, note: "Initial version", fields: input.fields, tables: input.tables }],
-    audit: [{ ts: now, type: "created", message: `Template "${input.name}" created` }],
   };
   const list = read();
   list.push(tpl);
@@ -108,7 +94,6 @@ export function saveNewVersion(id: string, fields: SavedField[], tables: SavedTa
   tpl.versions.push({ v: nextV, createdAt: Date.now(), note, fields, tables });
   tpl.currentVersion = nextV;
   tpl.updatedAt = Date.now();
-  (tpl.audit ??= []).push({ ts: Date.now(), type: "version_saved", message: `Saved version v${nextV} — ${note}`, meta: { version: nextV } });
   write(list);
   return tpl;
 }
@@ -117,15 +102,13 @@ export function duplicateTemplate(id: string): SavedTemplate | undefined {
   const src = getTemplate(id);
   if (!src) return;
   const v = src.versions.find((x) => x.v === src.currentVersion) ?? src.versions[src.versions.length - 1];
-  const dup = saveNewTemplate({
+  return saveNewTemplate({
     name: `${src.name} (copy)`,
     tag: src.tag,
     sourceFile: src.sourceFile,
     fields: JSON.parse(JSON.stringify(v.fields)),
     tables: JSON.parse(JSON.stringify(v.tables)),
   });
-  appendAudit(dup.id, { type: "duplicated", message: `Duplicated from "${src.name}"`, meta: { sourceId: src.id } });
-  return dup;
 }
 
 export function deleteTemplate(id: string) {
@@ -136,20 +119,7 @@ export function renameTemplate(id: string, name: string) {
   const list = read();
   const tpl = list.find((t) => t.id === id);
   if (!tpl) return;
-  const old = tpl.name;
   tpl.name = name;
-  tpl.updatedAt = Date.now();
-  (tpl.audit ??= []).push({ ts: Date.now(), type: "renamed", message: `Renamed "${old}" → "${name}"` });
-  write(list);
-}
-
-export function appendAudit(id: string, ev: Omit<AuditEvent, "ts">) {
-  const list = read();
-  const tpl = list.find((t) => t.id === id);
-  if (!tpl) return;
-  (tpl.audit ??= []).push({ ts: Date.now(), ...ev });
-  // cap history at 200 entries
-  if (tpl.audit.length > 200) tpl.audit = tpl.audit.slice(-200);
   tpl.updatedAt = Date.now();
   write(list);
 }

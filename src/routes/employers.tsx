@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { GlassCard, PageHeader } from "@/components/ui-bits";
-import { HeroSlider } from "@/components/HeroSlider";
 import { Building2, Search, Plus, MapPin, Users, FileCheck, MoreHorizontal } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -32,12 +31,6 @@ function tierBadge(tier: string) {
 function EmployersPage() {
   return (
     <AppShell>
-      <HeroSlider
-        slides={[
-          { eyebrow: "Sponsor Network", title: "Employers, quotas and active manpower — at a glance.", description: "Track sponsor licences, deployed worker counts and renewal windows across every employer in your network.", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=70" },
-          { eyebrow: "Compliance", title: "Quota utilisation, in real time.", description: "Animated dashboards show when an employer is approaching their MOM quota — before it becomes a problem.", image: "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1600&q=70" },
-        ]}
-      />
       <PageHeader
         eyebrow="Network"
         title="Employers"

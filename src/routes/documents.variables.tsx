@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { PageHeader, GlassCard } from "@/components/ui-bits";
-import { HeroSlider } from "@/components/HeroSlider";
 import { allVariables, type TemplateField } from "@/lib/templates";
 import {
   Braces, Plus, Search, Copy, Check, ArrowLeft, Type, Calendar,
@@ -64,12 +63,6 @@ function VariablesPage() {
 
   return (
     <AppShell>
-      <HeroSlider
-        slides={[
-          { eyebrow: "Variables", title: "One token, every template.", description: "Define {{FULL_NAME}}, {{PASSPORT_NUMBER}}, QR, BARCODE, SIGNATURE once — reuse across every document.", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=70" },
-          { eyebrow: "Engine", title: "The AI knows your fields by name.", description: "Detected fields auto-bind to your tokens. Confidence scores show you exactly what to confirm.", image: "https://images.unsplash.com/photo-1488229297570-58520851e868?auto=format&fit=crop&w=1600&q=70" },
-        ]}
-      />
       <Link
         to="/documents"
         className="hidden md:inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition"
