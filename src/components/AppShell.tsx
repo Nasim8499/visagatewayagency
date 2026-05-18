@@ -119,6 +119,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 const pageTitleMap: Record<string, string> = {
   "/": "Dashboard",
+  "/workers": "Workers",
   "/employers": "Employers",
   "/agencies": "Partner Agencies",
   "/documents": "Templates",
