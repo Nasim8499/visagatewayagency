@@ -525,23 +525,24 @@ function DocumentRender({ fields, tables, live = false, refEl }: {
   const tableField = fields.find((f) => f.type === "table");
   const table = tableField ? tables.find((t) => t.fieldId === tableField.id) : undefined;
 
+  const NAVY = "#152a4d";
+  const RED = "#e63946";
   return (
     <div
       ref={refEl}
-      className="relative aspect-[1/1.414] bg-white text-slate-900 mx-auto w-full max-w-[520px] rounded shadow-md overflow-hidden border border-border"
+      style={{ color: "#0f172a", backgroundColor: "#ffffff", borderColor: "#e2e8f0" }}
+      className="relative aspect-[1/1.414] mx-auto w-full max-w-[520px] rounded shadow-md overflow-hidden border"
     >
-      {/* watermark */}
       {watermark && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-7xl font-display font-extrabold text-slate-900/[0.05] rotate-[-30deg] tracking-widest">
+          <div style={{ color: "rgba(15,23,42,0.05)" }} className="text-7xl font-display font-extrabold rotate-[-30deg] tracking-widest">
             {watermark.sample}
           </div>
         </div>
       )}
-      {/* navy band header */}
-      <div className="h-12 bg-[var(--navy)] flex items-center justify-between px-4 text-white">
+      <div style={{ backgroundColor: NAVY }} className="h-12 flex items-center justify-between px-4 text-white">
         <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded gradient-red flex items-center justify-center">
+          <div style={{ backgroundColor: RED }} className="h-6 w-6 rounded flex items-center justify-center">
             <span className="text-[10px]">✈</span>
           </div>
           <div className="text-[10px] font-extrabold tracking-tight">VisaHOBe</div>
@@ -551,7 +552,7 @@ function DocumentRender({ fields, tables, live = false, refEl }: {
 
       <div className="px-6 pt-5">
         {header && (
-          <div className="text-center font-display font-extrabold text-[var(--navy)] tracking-wider text-[15px] mb-4">
+          <div style={{ color: NAVY }} className="text-center font-display font-extrabold tracking-wider text-[15px] mb-4">
             {header.sample}
           </div>
         )}
@@ -559,10 +560,10 @@ function DocumentRender({ fields, tables, live = false, refEl }: {
         <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-[10.5px]">
           {textFields.slice(0, 6).map((f) => (
             <div key={f.id} className="leading-tight">
-              <div className="text-[8px] uppercase tracking-wider text-slate-500 font-semibold">{f.label}</div>
-              <div className="font-semibold text-[var(--navy)]">
+              <div style={{ color: "#64748b" }} className="text-[8px] uppercase tracking-wider font-semibold">{f.label}</div>
+              <div style={{ color: NAVY }} className="font-semibold">
                 {f.boundVar ? (
-                  <span className={live ? "bg-amber-100 rounded px-1" : ""}>
+                  <span style={live ? { backgroundColor: "#fef3c7", borderRadius: 3, padding: "0 4px" } : undefined}>
                     {f.sample ?? `{{${f.boundVar}}}`}
                   </span>
                 ) : (
@@ -575,10 +576,10 @@ function DocumentRender({ fields, tables, live = false, refEl }: {
 
         {table && (
           <div className="mt-4">
-            <div className="text-[8px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Salary Breakdown</div>
-            <table className="w-full text-[9px]">
+            <div style={{ color: "#64748b" }} className="text-[8px] uppercase tracking-wider font-semibold mb-1">Salary Breakdown</div>
+            <table className="w-full text-[9px]" style={{ borderCollapse: "collapse" }}>
               <thead>
-                <tr className="bg-[oklch(0.95_0.02_258)] text-[var(--navy)]">
+                <tr style={{ backgroundColor: "#eef2f9", color: NAVY }}>
                   {table.columns.map((c) => (
                     <th key={c.key} className="text-left px-2 py-1.5 font-bold">{c.label}</th>
                   ))}
@@ -586,7 +587,7 @@ function DocumentRender({ fields, tables, live = false, refEl }: {
               </thead>
               <tbody>
                 {table.rows.map((r, i) => (
-                  <tr key={i} className="border-b border-slate-200">
+                  <tr key={i} style={{ borderBottom: "1px solid #e2e8f0" }}>
                     {table.columns.map((c) => (
                       <td key={c.key} className="px-2 py-1.5">{r[c.key]}</td>
                     ))}
@@ -597,7 +598,7 @@ function DocumentRender({ fields, tables, live = false, refEl }: {
           </div>
         )}
 
-        <div className="flex items-end justify-between mt-5 pt-3 border-t border-slate-200">
+        <div style={{ borderTop: "1px solid #e2e8f0" }} className="flex items-end justify-between mt-5 pt-3">
           <div>
             {barcode && (
               <>
@@ -608,8 +609,8 @@ function DocumentRender({ fields, tables, live = false, refEl }: {
           </div>
           {sig && (
             <div className="text-center">
-              <div className="font-display italic text-[14px] text-[var(--navy)] border-b border-slate-700 px-3 pb-0.5">A. Hossain</div>
-              <div className="text-[8px] text-slate-500 mt-1">{sig.label}</div>
+              <div style={{ color: NAVY, borderBottom: "1px solid #334155" }} className="font-display italic text-[14px] px-3 pb-0.5">A. Hossain</div>
+              <div style={{ color: "#64748b" }} className="text-[8px] mt-1">{sig.label}</div>
             </div>
           )}
           {qr && <QRBlock />}
@@ -617,7 +618,7 @@ function DocumentRender({ fields, tables, live = false, refEl }: {
       </div>
 
       {footer && (
-        <div className="absolute bottom-0 inset-x-0 px-4 py-2 bg-slate-50 text-[8px] text-slate-500 text-center border-t border-slate-200">
+        <div style={{ backgroundColor: "#f8fafc", color: "#64748b", borderTop: "1px solid #e2e8f0" }} className="absolute bottom-0 inset-x-0 px-4 py-2 text-[8px] text-center">
           {footer.sample}
         </div>
       )}
