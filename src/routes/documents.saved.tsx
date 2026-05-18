@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui-bits";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import {
-  FileText, Copy, Trash2, Pencil, History, Plus, Sparkles, Calendar, Layers,
+  FileText, Copy, Trash2, Pencil, History, Plus, Sparkles, Calendar, Layers, ClipboardList,
 } from "lucide-react";
 import {
   listTemplates, duplicateTemplate, deleteTemplate, renameTemplate,
@@ -113,6 +113,21 @@ function SavedPage() {
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
+                {(t.audit?.length ?? 0) > 0 && (
+                  <details className="mt-3 group">
+                    <summary className="text-[11px] font-bold text-muted-foreground cursor-pointer hover:text-[var(--navy)] inline-flex items-center gap-1.5 list-none">
+                      <ClipboardList className="h-3.5 w-3.5" /> Audit Log ({t.audit!.length})
+                    </summary>
+                    <div className="mt-2 max-h-40 overflow-y-auto space-y-1.5 pr-1">
+                      {[...t.audit!].reverse().slice(0, 30).map((e, idx) => (
+                        <div key={idx} className="text-[10.5px] flex items-start gap-2 border-l-2 border-[var(--navy)]/30 pl-2">
+                          <span className="font-mono text-muted-foreground shrink-0">{new Date(e.ts).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                          <span className="text-foreground">{e.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
               </motion.div>
             );
           })}
