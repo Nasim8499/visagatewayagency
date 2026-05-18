@@ -831,6 +831,7 @@ function StepExport({ fields, tables, onBack, savedId }: { fields: DetectedField
         pdf.addImage(img, "PNG", 0, 0, w, Math.min(imgH, h));
       }
       pdf.save(`VisaHOBe-${applicant.FULL_NAME?.replace(/\s+/g, "_") || "document"}-${Date.now()}.pdf`);
+      if (savedId) appendAudit(savedId, { type: "exported", message: `Exported PDF for ${applicant.FULL_NAME || "(unnamed)"}`, meta: { pages: pages.length } });
       setDone(true);
       setTimeout(() => setDone(false), 2500);
     } finally {
