@@ -26,6 +26,18 @@ export type SavedVersion = {
   tables: SavedTable[];
 };
 
+export type AuditEventType =
+  | "created" | "edited" | "renamed" | "duplicated" | "version_saved"
+  | "field_redetected" | "field_moved" | "field_bound" | "field_removed"
+  | "exported" | "test_generated";
+
+export type AuditEvent = {
+  ts: number;
+  type: AuditEventType;
+  message: string;
+  meta?: Record<string, string | number>;
+};
+
 export type SavedTemplate = {
   id: string;
   name: string;
@@ -35,6 +47,7 @@ export type SavedTemplate = {
   updatedAt: number;
   currentVersion: number;
   versions: SavedVersion[];
+  audit?: AuditEvent[];
 };
 
 const KEY = "vh.savedTemplates.v1";
