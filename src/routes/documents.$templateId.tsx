@@ -33,7 +33,7 @@ const typeIcon: Record<TemplateField["type"], typeof Type> = {
 };
 
 function TemplateDetail() {
-  const { template } = Route.useLoaderData();
+  const { template } = Route.useLoaderData() as { template: Template };
   const [values, setValues] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
