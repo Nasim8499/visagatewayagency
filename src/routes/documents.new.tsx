@@ -727,6 +727,32 @@ function StepMap({
         </div>
       </div>
 
+      {/* Test Generate report banner */}
+      {testReport && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+          className={`card-surface p-3 md:p-4 border-l-4 flex items-start gap-3 ${testReport.overflows.length > 0 ? "border-rose-500 bg-rose-50/40" : "border-emerald-500 bg-emerald-50/40"}`}
+        >
+          {testReport.overflows.length > 0 ? <AlertCircle className="h-5 w-5 text-rose-600 shrink-0" /> : <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />}
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-[var(--navy)]">
+              {testReport.overflows.length > 0
+                ? `${testReport.overflows.length} field${testReport.overflows.length === 1 ? "" : "s"} overflow the page · ${testReport.pages} page${testReport.pages === 1 ? "" : "s"} rendered`
+                : `Pagination clean · ${testReport.pages} page${testReport.pages === 1 ? "" : "s"} rendered, no overflow detected`}
+            </div>
+            {testReport.overflows.length > 0 && (
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Highlighted in red on the preview — drag them back inside the page bounds before saving a version:{" "}
+                <span className="font-semibold text-rose-700">{testReport.overflows.map((o) => o.label).join(", ")}</span>
+              </div>
+            )}
+          </div>
+          <button onClick={() => { setTestReport(null); setOverflowIds(new Set()); }} className="text-xs text-muted-foreground hover:text-[var(--navy)] shrink-0">
+            <X className="h-4 w-4" />
+          </button>
+        </motion.div>
+      )}
+
       {/* Editor toolbar */}
       <div className="card-surface p-2 flex items-center gap-1 flex-wrap">
         <button onClick={hist.undo} disabled={!hist.canUndo} title="Undo (⌘Z)" className="h-9 px-3 rounded-lg hover:bg-secondary disabled:opacity-30 flex items-center gap-1.5 text-xs font-semibold text-[var(--navy)]">
