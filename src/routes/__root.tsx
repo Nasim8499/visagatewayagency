@@ -75,11 +75,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "VisaHOBe — AI Immigration Operations" },
       { name: "description", content: "VisaHOBe Pte. Ltd. — AI-powered immigration & document automation OS." },
       { name: "author", content: "VisaHOBe" },
-      { property: "og:title", content: "VisaHOBe — AI Immigration OS" },
-      { property: "og:description", content: "AI document template engine, employer & agency management." },
+      { property: "og:title", content: "VisaHOBe — AI Immigration Operations" },
+      { property: "og:description", content: "VisaHOBe Pte. Ltd. — AI-powered immigration & document automation OS." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "VisaHOBe — AI Immigration Operations" },
+      { name: "twitter:description", content: "VisaHOBe Pte. Ltd. — AI-powered immigration & document automation OS." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/608c03c6-68c7-4345-acac-4a980e3f449a" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/608c03c6-68c7-4345-acac-4a980e3f449a" },
     ],
     links: [
       {
