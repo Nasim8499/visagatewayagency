@@ -630,14 +630,16 @@ function StepMap({
     return () => window.removeEventListener("keydown", fn);
   }, [hist]);
 
-  const updateFields = (next: DetectedField[]) => hist.set({ fields: next, tables: hist.state.tables });
-  const updateTables = (next: TableConfig[]) => hist.set({ fields: hist.state.fields, tables: next });
+  const liveFields = hist.state.fields;
+  const liveTables = hist.state.tables;
+  const updateFields = (next: DetectedField[]) => hist.set({ fields: next, tables: liveTables });
+  const updateTables = (next: TableConfig[]) => hist.set({ fields: liveFields, tables: next });
 
-  const bound = fields.filter((f) => f.boundVar).length;
-  const totalBindable = fields.filter((f) => !["header", "footer", "watermark", "table"].includes(f.type)).length;
-  const tableFields = fields.filter((f) => f.type === "table");
-  const lowConf = fields.filter((f) => f.confidence < 0.9).length;
-  const avgConf = Math.round((fields.reduce((s, f) => s + f.confidence, 0) / Math.max(fields.length, 1)) * 100);
+  const bound = liveFields.filter((f) => f.boundVar).length;
+  const totalBindable = liveFields.filter((f) => !["header", "footer", "watermark", "table"].includes(f.type)).length;
+  const tableFields = liveFields.filter((f) => f.type === "table");
+  const lowConf = liveFields.filter((f) => f.confidence < 0.9).length;
+  const avgConf = Math.round((liveFields.reduce((s, f) => s + f.confidence, 0) / Math.max(liveFields.length, 1)) * 100);
 
   // Throttle drag history snapshots — record only on drag end. Use ref to coalesce.
   const dragRecordingRef = useRef<number | null>(null);
