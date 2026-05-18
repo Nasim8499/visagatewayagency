@@ -205,8 +205,7 @@ function StepDetect({ file, onComplete }: { file: File; onComplete: (fields: Det
     "Compiling smart template…",
   ], []);
 
-  // run animation
-  useState(() => {
+  useEffect(() => {
     let p = 0;
     const id = setInterval(() => {
       p += 3 + Math.random() * 4;
@@ -222,7 +221,8 @@ function StepDetect({ file, onComplete }: { file: File; onComplete: (fields: Det
       setStage(Math.min(stages.length - 1, Math.floor((p / 100) * stages.length)));
     }, 220);
     return () => clearInterval(id);
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card-surface p-6 md:p-10">
