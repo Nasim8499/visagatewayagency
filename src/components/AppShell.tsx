@@ -1,35 +1,32 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, FileText, FilePlus2, Files, Library, FolderTree,
-  Database, PenTool, QrCode, Settings, UsersRound, ClipboardList, Trash2,
+  LayoutDashboard, FileText, FilePlus2, Library,
+  FolderTree, Database, UsersRound,
   Bell, Plane, Rocket, ChevronDown, Menu, X, HardHat,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 
+type NavTo = "/" | "/employers" | "/agencies" | "/workers" | "/documents" | "/documents/new" | "/documents/variables" | "/documents/saved";
 type NavItem = {
-  to: "/" | "/employers" | "/agencies" | "/workers" | "/documents" | "/documents/variables" | "/documents/saved";
+  to: NavTo;
   label: string;
   icon: typeof LayoutDashboard;
   exact?: boolean;
 };
 
+// Each item navigates to a unique route. No duplicates.
 const navItems: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/workers", label: "Workers", icon: HardHat },
   { to: "/employers", label: "Employers", icon: FolderTree },
   { to: "/agencies", label: "Agencies", icon: UsersRound },
   { to: "/documents", label: "Templates", icon: FileText, exact: true },
+  { to: "/documents/new", label: "Create Document", icon: FilePlus2 },
   { to: "/documents/saved", label: "Saved Library", icon: Library },
-  { to: "/documents", label: "Create Document", icon: FilePlus2 },
-  { to: "/documents", label: "Documents", icon: Files },
   { to: "/documents/variables", label: "Data Fields", icon: Database },
-  { to: "/agencies", label: "Page Designer", icon: PenTool },
-  { to: "/documents/variables", label: "QR / Barcode", icon: QrCode },
-  { to: "/employers", label: "Settings", icon: Settings },
-  { to: "/documents", label: "Activity Log", icon: ClipboardList },
-  { to: "/documents", label: "Trash", icon: Trash2 },
 ];
+
 
 function Logo() {
   return (
