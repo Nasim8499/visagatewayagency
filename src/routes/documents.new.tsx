@@ -361,13 +361,15 @@ function renderFieldVisual(f: DetectedField, applicant: Record<string, string>) 
 
 // One A4 page rendering with absolute positioning + table chunk
 function DocumentPage({
-  fields, table, applicant, tableSlice, isFirstPage, totalPages, pageNum, editable, onMove, refEl,
+  fields, table, applicant, tableSlice, isFirstPage, totalPages, pageNum, editable, onMove, refEl, snap, showGrid,
 }: {
   fields: DetectedField[]; table?: TableConfig; applicant: Record<string, string>;
   tableSlice: Record<string, string>[]; isFirstPage: boolean; totalPages: number; pageNum: number;
   editable?: boolean; onMove?: (id: string, x: number, y: number) => void; refEl?: React.Ref<HTMLDivElement>;
+  snap?: boolean; showGrid?: boolean;
 }) {
   const paperRef = useRef<HTMLDivElement>(null);
+  const [guides, setGuides] = useState<{ v?: number; h?: number; cv?: boolean; ch?: boolean }>({});
   const positioned = fields.filter((f) => isPositionable(f.type));
   const textFields = fields.filter((f) => ["text", "date", "number"].includes(f.type));
   const tableField = fields.find((f) => f.type === "table");
@@ -377,12 +379,39 @@ function DocumentPage({
     e.preventDefault();
     const paper = paperRef.current; if (!paper) return;
     const rect = paper.getBoundingClientRect();
+    const SNAP_STEP = 2; // % grid
+    const GUIDE_TOL = 1.2; // %
+    const others = positioned.filter((p) => p.id !== id);
+
     const move = (ev: PointerEvent) => {
-      const nx = ((ev.clientX - rect.left) / rect.width) * 100;
-      const ny = ((ev.clientY - rect.top) / rect.height) * 100;
-      onMove?.(id, Math.max(0, Math.min(95, nx - 5)), Math.max(0, Math.min(97, ny - 3)));
+      let nx = ((ev.clientX - rect.left) / rect.width) * 100 - 5;
+      let ny = ((ev.clientY - rect.top) / rect.height) * 100 - 3;
+      nx = Math.max(0, Math.min(95, nx));
+      ny = Math.max(0, Math.min(97, ny));
+
+      // alignment guides — snap to centers/edges of other items + page center
+      const targetsX = [50 - 0, ...others.map((o) => o.bbox.x), ...others.map((o) => o.bbox.x + o.bbox.w / 2)];
+      const targetsY = [50, ...others.map((o) => o.bbox.y), ...others.map((o) => o.bbox.y + o.bbox.h / 2)];
+      let vGuide: number | undefined; let hGuide: number | undefined; let cv = false; let ch = false;
+      for (const tx of targetsX) {
+        if (Math.abs(nx - tx) < GUIDE_TOL) { vGuide = tx; nx = tx; if (tx === 50) cv = true; break; }
+      }
+      for (const ty of targetsY) {
+        if (Math.abs(ny - ty) < GUIDE_TOL) { hGuide = ty; ny = ty; if (ty === 50) ch = true; break; }
+      }
+
+      if (snap) {
+        nx = Math.round(nx / SNAP_STEP) * SNAP_STEP;
+        ny = Math.round(ny / SNAP_STEP) * SNAP_STEP;
+      }
+      setGuides({ v: vGuide, h: hGuide, cv, ch });
+      onMove?.(id, nx, ny);
     };
-    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+    const up = () => {
+      setGuides({});
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
   };
@@ -410,7 +439,7 @@ function DocumentPage({
         <div className="text-[9px] font-mono opacity-70">PAGE {pageNum} / {totalPages}</div>
       </div>
 
-      {/* Body — text fields rendered as grid only on first page; tables flow; positioned items absolute */}
+      {/* Body */}
       <div className="px-6 pt-4 relative" style={{ minHeight: "calc(100% - 40px)" }}>
         {isFirstPage && (
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10.5px] mt-8">
@@ -449,7 +478,27 @@ function DocumentPage({
           </div>
         )}
 
-        {/* Absolute positioned: header/footer/watermark/QR/barcode/signature/image */}
+        {/* Grid overlay (editable) */}
+        {editable && showGrid && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgba(21,42,77,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(21,42,77,0.06) 1px, transparent 1px)",
+              backgroundSize: "5% 5%",
+            }}
+          />
+        )}
+
+        {/* Alignment guides */}
+        {editable && guides.v !== undefined && (
+          <div className={`absolute top-0 bottom-0 w-px pointer-events-none ${guides.cv ? "bg-rose-500" : "bg-cyan-500"}`} style={{ left: `${guides.v}%` }} />
+        )}
+        {editable && guides.h !== undefined && (
+          <div className={`absolute left-0 right-0 h-px pointer-events-none ${guides.ch ? "bg-rose-500" : "bg-cyan-500"}`} style={{ top: `${guides.h - 10}%` }} />
+        )}
+
+        {/* Absolute positioned items */}
         {positioned.map((f) => (
           <div
             key={f.id}
@@ -461,7 +510,7 @@ function DocumentPage({
               cursor: editable ? "grab" : "default",
               touchAction: "none",
             }}
-            className={editable ? "outline-dashed outline-1 outline-[var(--navy)]/40 hover:outline-[var(--navy)] rounded-sm" : ""}
+            className={editable ? "outline-dashed outline-1 outline-[var(--navy)]/40 hover:outline-[var(--navy)] rounded-sm transition-colors" : ""}
           >
             <div className="w-full h-full flex items-center justify-center pointer-events-none">
               {renderFieldVisual(f, applicant)}
@@ -479,11 +528,12 @@ function DocumentPage({
 }
 
 function DocumentRender({
-  fields, tables, applicant = {}, editable, onMove, pageRefs,
+  fields, tables, applicant = {}, editable, onMove, pageRefs, snap, showGrid,
 }: {
   fields: DetectedField[]; tables: TableConfig[]; applicant?: Record<string, string>;
   editable?: boolean; onMove?: (id: string, x: number, y: number) => void;
   pageRefs?: React.MutableRefObject<(HTMLDivElement | null)[]>;
+  snap?: boolean; showGrid?: boolean;
 }) {
   const tableField = fields.find((f) => f.type === "table");
   const table = tableField ? tables.find((t) => t.fieldId === tableField.id) : undefined;
@@ -507,6 +557,8 @@ function DocumentRender({
             pageNum={i + 1}
             editable={editable && i === 0}
             onMove={onMove}
+            snap={snap}
+            showGrid={showGrid}
             refEl={(el) => { if (pageRefs) pageRefs.current[i] = el; }}
           />
         );
