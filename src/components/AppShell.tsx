@@ -3,12 +3,13 @@ import { LayoutDashboard, Users, Handshake, FileText, Settings, Bell, Sparkles }
 import { motion, AnimatePresence } from "motion/react";
 import type { ReactNode } from "react";
 
-const navItems = [
+type NavItem = { to: "/" | "/employers" | "/agencies" | "/documents"; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+const navItems: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/employers", label: "Employers", icon: Users },
   { to: "/agencies", label: "Partner Agencies", icon: Handshake },
   { to: "/documents", label: "Documents", icon: FileText },
-] as const;
+];
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
