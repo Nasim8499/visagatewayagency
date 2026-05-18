@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { PageHeader, GlassCard } from "@/components/ui-bits";
+import { HeroSlider } from "@/components/HeroSlider";
 import { allVariables, type TemplateField } from "@/lib/templates";
 import {
   Braces, Plus, Search, Copy, Check, ArrowLeft, Type, Calendar,
