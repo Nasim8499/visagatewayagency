@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { HeroSlider } from "@/components/HeroSlider";
 import { motion } from "motion/react";
 import {
   FileCheck, Users, Clock, TrendingUp, ArrowRight, Sparkles, Plus,
@@ -273,6 +274,7 @@ function toneBg(t: "success" | "info" | "warning") {
 function Dashboard() {
   return (
     <AppShell>
+      <div className="mb-6"><HeroSlider /></div>
       <HeroBanner />
 
       {/* Stats */}

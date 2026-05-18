@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { GlassCard, PageHeader } from "@/components/ui-bits";
+import { HeroSlider } from "@/components/HeroSlider";
 import { Building2, Search, Plus, MapPin, Users, FileCheck, MoreHorizontal } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -31,6 +32,7 @@ function tierBadge(tier: string) {
 function EmployersPage() {
   return (
     <AppShell>
+      <div className="mb-6"><HeroSlider /></div>
       <PageHeader
         eyebrow="Network"
         title="Employers"

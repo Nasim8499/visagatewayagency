@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { PageHeader, GlassCard } from "@/components/ui-bits";
+import { HeroSlider } from "@/components/HeroSlider";
 import { allVariables, type TemplateField } from "@/lib/templates";
 import {
   Braces, Plus, Search, Copy, Check, ArrowLeft, Type, Calendar,
@@ -70,6 +71,7 @@ function VariablesPage() {
         <ArrowLeft className="h-3.5 w-3.5" /> Back to Document Hub
       </Link>
 
+      <div className="mb-6"><HeroSlider /></div>
       <PageHeader
         eyebrow="Field Mapping"
         title="Template Variables"
