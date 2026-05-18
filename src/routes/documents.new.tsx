@@ -7,10 +7,11 @@ import {
   Type, Table as TableIcon, QrCode, Barcode, PenLine, Image as ImageIcon,
   Layers, ShieldCheck, Download, Plus, Trash2, Eye, Wand2, FileCheck2,
   Cloud, AlertCircle, CheckCircle2, RefreshCw, Move, Save, Zap, History,
+  Undo2, Redo2, Grid3x3, PlayCircle,
 } from "lucide-react";
 import { allVariables } from "@/lib/templates";
 import {
-  saveNewTemplate, saveNewVersion, getTemplate, getVersion,
+  saveNewTemplate, saveNewVersion, getTemplate, getVersion, appendAudit,
   type SavedField, type SavedTable,
 } from "@/lib/savedTemplates";
 import jsPDF from "jspdf";
