@@ -361,12 +361,12 @@ function renderFieldVisual(f: DetectedField, applicant: Record<string, string>) 
 
 // One A4 page rendering with absolute positioning + table chunk
 function DocumentPage({
-  fields, table, applicant, tableSlice, isFirstPage, totalPages, pageNum, editable, onMove, refEl, snap, showGrid,
+  fields, table, applicant, tableSlice, isFirstPage, totalPages, pageNum, editable, onMove, refEl, snap, showGrid, overflowIds,
 }: {
   fields: DetectedField[]; table?: TableConfig; applicant: Record<string, string>;
   tableSlice: Record<string, string>[]; isFirstPage: boolean; totalPages: number; pageNum: number;
   editable?: boolean; onMove?: (id: string, x: number, y: number) => void; refEl?: React.Ref<HTMLDivElement>;
-  snap?: boolean; showGrid?: boolean;
+  snap?: boolean; showGrid?: boolean; overflowIds?: Set<string>;
 }) {
   const paperRef = useRef<HTMLDivElement>(null);
   const [guides, setGuides] = useState<{ v?: number; h?: number; cv?: boolean; ch?: boolean }>({});
