@@ -1,14 +1,24 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, Handshake, FileText, Settings, Bell, Sparkles } from "lucide-react";
+import {
+  LayoutDashboard, Users, Handshake, FileText, Settings, Bell, Sparkles,
+  Menu, X, Braces,
+} from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
-type NavItem = { to: "/" | "/employers" | "/agencies" | "/documents"; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+type NavItem = {
+  to: "/" | "/employers" | "/agencies" | "/documents" | "/documents/variables";
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+};
+
 const navItems: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/employers", label: "Employers", icon: Users },
   { to: "/agencies", label: "Partner Agencies", icon: Handshake },
-  { to: "/documents", label: "Documents", icon: FileText },
+  { to: "/documents", label: "Documents", icon: FileText, exact: true },
+  { to: "/documents/variables", label: "Template Variables", icon: Braces },
 ];
 
 function Logo({ compact = false }: { compact?: boolean }) {
@@ -53,7 +63,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
               />
             )}
             <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={active ? 2.4 : 2} />
-            <span>{label}</span>
+            <span className="truncate">{label}</span>
           </Link>
         );
       })}
@@ -61,19 +71,29 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function Sidebar() {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <aside className="hidden md:flex fixed inset-y-0 left-0 z-30 w-[260px] flex-col glass-strong border-r border-white/5">
-      <div className="px-5 py-5 border-b border-white/5">
+    <div className="flex flex-col h-full">
+      <div className="px-5 py-5 border-b border-white/5 flex items-center justify-between">
         <Logo />
+        {onNavigate && (
+          <button
+            onClick={onNavigate}
+            className="md:hidden h-9 w-9 rounded-xl glass flex items-center justify-center"
+            aria-label="Close menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto py-5">
         <div className="px-6 mb-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">Workspace</div>
-        <NavLinks />
+        <NavLinks onNavigate={onNavigate} />
       </div>
       <div className="p-3 border-t border-white/5">
         <Link
           to="/"
+          onClick={onNavigate}
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.03] transition-colors"
         >
           <Settings className="h-[18px] w-[18px]" />
@@ -89,7 +109,7 @@ function Sidebar() {
           </div>
         </div>
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -98,17 +118,31 @@ const pageTitleMap: Record<string, string> = {
   "/employers": "Employers",
   "/agencies": "Partner Agencies",
   "/documents": "Documents",
+  "/documents/variables": "Variables",
 };
 
-function MobileHeader() {
+function getTitle(path: string) {
+  if (pageTitleMap[path]) return pageTitleMap[path];
+  if (path.startsWith("/documents/")) return "Template";
+  return "VisaHOBe";
+}
+
+function MobileHeader({ onMenu }: { onMenu: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const title = pageTitleMap[pathname] ?? "VisaHOBe";
+  const title = getTitle(pathname);
 
   return (
     <header className="md:hidden sticky top-0 z-40 glass-strong border-b border-white/5">
-      <div className="flex items-center justify-between px-4 h-14">
+      <div className="flex items-center justify-between px-3 h-14 gap-2">
+        <button
+          onClick={onMenu}
+          className="h-10 w-10 rounded-xl glass flex items-center justify-center hover:bg-white/5 transition shrink-0"
+          aria-label="Open menu"
+        >
+          <Menu className="h-[18px] w-[18px]" />
+        </button>
         <Logo compact />
-        <div className="flex-1 text-center">
+        <div className="flex-1 text-center min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={title}
@@ -116,14 +150,14 @@ function MobileHeader() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.2 }}
-              className="font-display font-semibold text-[15px]"
+              className="font-display font-semibold text-[15px] truncate"
             >
               {title}
             </motion.div>
           </AnimatePresence>
         </div>
         <button
-          className="relative h-9 w-9 rounded-xl glass flex items-center justify-center hover:bg-white/5 transition-colors"
+          className="relative h-10 w-10 rounded-xl glass flex items-center justify-center hover:bg-white/5 transition shrink-0"
           aria-label="Notifications"
         >
           <Bell className="h-[18px] w-[18px]" />
@@ -134,40 +168,54 @@ function MobileHeader() {
   );
 }
 
-function MobileSidebar() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  return (
-    <nav className="md:hidden fixed left-2 top-1/2 -translate-y-1/2 z-30 glass-strong rounded-2xl p-2 flex flex-col gap-1">
-      {navItems.map(({ to, label, icon: Icon, exact }) => {
-        const active = exact ? pathname === to : pathname.startsWith(to);
-        return (
-          <Link
-            key={to}
-            to={to}
-            aria-label={label}
-            className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all ${
-              active
-                ? "gradient-brand text-brand-foreground shadow-[var(--shadow-glow)]"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-            }`}
-          >
-            <Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.4 : 2} />
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [open, setOpen] = useState(false);
+
+  // Close drawer on route change
+  useEffect(() => { setOpen(false); }, [pathname]);
+
+  // Lock scroll when open
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
   return (
     <div className="min-h-screen">
-      <Sidebar />
-      <MobileSidebar />
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex fixed inset-y-0 left-0 z-30 w-[260px] flex-col glass-strong border-r border-white/5">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setOpen(false)}
+              className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              className="md:hidden fixed inset-y-0 left-0 z-50 w-[280px] glass-strong border-r border-white/5"
+            >
+              <SidebarContent onNavigate={() => setOpen(false)} />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
       <div className="md:ml-[260px] flex flex-col min-h-screen">
-        <MobileHeader />
-        <main className="flex-1 px-4 md:px-8 py-5 md:py-8 pl-16 md:pl-8">
+        <MobileHeader onMenu={() => setOpen(true)} />
+        <main className="flex-1 px-4 md:px-8 py-5 md:py-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
