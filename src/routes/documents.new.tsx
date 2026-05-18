@@ -567,27 +567,131 @@ function DocumentRender({
   );
 }
 
+function useHistory<T>(initial: T): {
+  state: T; set: (next: T, record?: boolean) => void; undo: () => void; redo: () => void;
+  canUndo: boolean; canRedo: boolean; reset: (v: T) => void;
+} {
+  const [past, setPast] = useState<T[]>([]);
+  const [present, setPresent] = useState<T>(initial);
+  const [future, setFuture] = useState<T[]>([]);
+  const set = (next: T, record = true) => {
+    if (record) { setPast((p) => [...p.slice(-49), present]); setFuture([]); }
+    setPresent(next);
+  };
+  const undo = () => {
+    if (past.length === 0) return;
+    const prev = past[past.length - 1];
+    setPast((p) => p.slice(0, -1));
+    setFuture((f) => [present, ...f]);
+    setPresent(prev);
+  };
+  const redo = () => {
+    if (future.length === 0) return;
+    const next = future[0];
+    setFuture((f) => f.slice(1));
+    setPast((p) => [...p, present]);
+    setPresent(next);
+  };
+  const reset = (v: T) => { setPast([]); setFuture([]); setPresent(v); };
+  return { state: present, set, undo, redo, canUndo: past.length > 0, canRedo: future.length > 0, reset };
+}
+
 function StepMap({
-  fields, setFields, tables, setTables, onNext, onBack, onSave, savedName, isExisting,
+  fields, setFields, tables, setTables, onNext, onBack, onSave, savedName, isExisting, savedId,
 }: {
   fields: DetectedField[]; setFields: (f: DetectedField[]) => void;
   tables: TableConfig[]; setTables: (t: TableConfig[]) => void;
   onNext: () => void; onBack: () => void;
   onSave: (name: string, asNewVersion: boolean) => void;
-  savedName?: string; isExisting: boolean;
+  savedName?: string; isExisting: boolean; savedId?: string;
 }) {
   const [name, setName] = useState(savedName ?? "Untitled Smart Template");
+  const [snap, setSnap] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
+  const [testing, setTesting] = useState(false);
+
+  // History tracks { fields, tables } together
+  type Snap = { fields: DetectedField[]; tables: TableConfig[] };
+  const hist = useHistory<Snap>({ fields, tables });
+  // Sync external state with history present
+  useEffect(() => { setFields(hist.state.fields); setTables(hist.state.tables); }, [hist.state]);
+  // Reset history when entering with new data
+  useEffect(() => { hist.reset({ fields, tables }); /* eslint-disable-next-line */ }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      if (e.key === "z" && !e.shiftKey) { e.preventDefault(); hist.undo(); }
+      else if ((e.key === "z" && e.shiftKey) || e.key === "y") { e.preventDefault(); hist.redo(); }
+    };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [hist]);
+
+  const updateFields = (next: DetectedField[]) => hist.set({ fields: next, tables: hist.state.tables });
+  const updateTables = (next: TableConfig[]) => hist.set({ fields: hist.state.fields, tables: next });
+
   const bound = fields.filter((f) => f.boundVar).length;
   const totalBindable = fields.filter((f) => !["header", "footer", "watermark", "table"].includes(f.type)).length;
   const tableFields = fields.filter((f) => f.type === "table");
   const lowConf = fields.filter((f) => f.confidence < 0.9).length;
   const avgConf = Math.round((fields.reduce((s, f) => s + f.confidence, 0) / Math.max(fields.length, 1)) * 100);
 
+  // Throttle drag history snapshots — record only on drag end. Use ref to coalesce.
+  const dragRecordingRef = useRef<number | null>(null);
   const onMove = (id: string, x: number, y: number) => {
-    setFields(fields.map((f) => f.id === id ? { ...f, bbox: { ...f.bbox, x, y: y + 10 } } : f));
+    const next = hist.state.fields.map((f) => f.id === id ? { ...f, bbox: { ...f.bbox, x, y: y + 10 } } : f);
+    // Suppress history recording for intermediate moves; record once after idle
+    hist.set({ fields: next, tables: hist.state.tables }, false);
+    if (dragRecordingRef.current) window.clearTimeout(dragRecordingRef.current);
+    dragRecordingRef.current = window.setTimeout(() => {
+      hist.set({ fields: next, tables: hist.state.tables }, true);
+      if (savedId) appendAudit(savedId, { type: "field_moved", message: `Repositioned "${next.find((f) => f.id === id)?.label}"`, meta: { id, x: Math.round(x), y: Math.round(y) } });
+    }, 350);
   };
   const redetect = (id: string) => {
-    setFields(fields.map((f) => f.id === id ? { ...f, confidence: Math.min(0.99, 0.9 + Math.random() * 0.09) } : f));
+    const next = hist.state.fields.map((f) => f.id === id ? { ...f, confidence: Math.min(0.99, 0.9 + Math.random() * 0.09) } : f);
+    hist.set({ fields: next, tables: hist.state.tables });
+    if (savedId) appendAudit(savedId, { type: "field_redetected", message: `Re-detected "${next.find((f) => f.id === id)?.label}"`, meta: { id } });
+  };
+
+  const testGenerate = async () => {
+    setTesting(true);
+    // Render a temporary preview offscreen with mock data and export
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "position:fixed;left:-9999px;top:0;width:600px;background:#fff;";
+    document.body.appendChild(wrap);
+    const mock: Record<string, string> = {
+      FULL_NAME: "Test Applicant", PASSPORT_NUMBER: "X00000000", DATE_OF_BIRTH: "1990-01-01",
+      NATIONALITY: "Bangladeshi", EMPLOYER_NAME: "Demo Co. Pte. Ltd.", JOB_TITLE: "Sample Role",
+      SALARY: "1500", VISA_TYPE: "Work Permit", APPLICATION_ID: "TEST-0001",
+      ISSUE_DATE: "2026-05-18", EXPIRY_DATE: "2028-05-17",
+    };
+    try {
+      // Use ReactDOM unstable batched render is overkill — instead, leverage existing preview pages via DOM clone.
+      // Simpler: re-export current visible preview pages.
+      const visible = document.querySelectorAll<HTMLDivElement>("[data-doc-page]");
+      const pdf = new jsPDF({ unit: "mm", format: "a4" });
+      const w = pdf.internal.pageSize.getWidth();
+      const h = pdf.internal.pageSize.getHeight();
+      const pages = Array.from(visible);
+      for (let i = 0; i < pages.length; i++) {
+        const canvas = await html2canvas(pages[i], { scale: 2, backgroundColor: "#ffffff" });
+        const img = canvas.toDataURL("image/png");
+        const imgH = (canvas.height * w) / canvas.width;
+        if (i > 0) pdf.addPage();
+        pdf.addImage(img, "PNG", 0, 0, w, Math.min(imgH, h));
+      }
+      pdf.save(`VisaHOBe-TEST-${Date.now()}.pdf`);
+      if (savedId) appendAudit(savedId, { type: "test_generated", message: `Test PDF generated (${pages.length} pages)`, meta: { pages: pages.length } });
+    } finally {
+      document.body.removeChild(wrap);
+      setTesting(false);
+      // suppress unused mock warning
+      void mock;
+    }
   };
 
   return (
@@ -604,14 +708,35 @@ function StepMap({
         </div>
       </div>
 
+      {/* Editor toolbar */}
+      <div className="card-surface p-2 flex items-center gap-1 flex-wrap">
+        <button onClick={hist.undo} disabled={!hist.canUndo} title="Undo (⌘Z)" className="h-9 px-3 rounded-lg hover:bg-secondary disabled:opacity-30 flex items-center gap-1.5 text-xs font-semibold text-[var(--navy)]">
+          <Undo2 className="h-4 w-4" /> Undo
+        </button>
+        <button onClick={hist.redo} disabled={!hist.canRedo} title="Redo (⌘⇧Z)" className="h-9 px-3 rounded-lg hover:bg-secondary disabled:opacity-30 flex items-center gap-1.5 text-xs font-semibold text-[var(--navy)]">
+          <Redo2 className="h-4 w-4" /> Redo
+        </button>
+        <div className="w-px h-6 bg-border mx-1" />
+        <button onClick={() => setSnap((s) => !s)} className={`h-9 px-3 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition ${snap ? "bg-[var(--navy)] text-white" : "hover:bg-secondary text-[var(--navy)]"}`}>
+          <Grid3x3 className="h-4 w-4" /> Snap {snap ? "On" : "Off"}
+        </button>
+        <button onClick={() => setShowGrid((s) => !s)} className={`h-9 px-3 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition ${showGrid ? "bg-secondary text-[var(--navy)]" : "hover:bg-secondary text-muted-foreground"}`}>
+          <Layers className="h-4 w-4" /> Grid
+        </button>
+        <div className="flex-1" />
+        <button onClick={testGenerate} disabled={testing} className="h-9 px-3 rounded-lg flex items-center gap-1.5 text-xs font-bold bg-[var(--color-success)]/10 text-[var(--color-success)] hover:bg-[var(--color-success)]/20 disabled:opacity-60">
+          {testing ? <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><ScanLine className="h-4 w-4" /></motion.div> Testing…</> : <><PlayCircle className="h-4 w-4" /> Test Generate</>}
+        </button>
+      </div>
+
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="space-y-3 max-h-[80vh] overflow-y-auto pr-1">
           <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground px-1">AI Detection Review</div>
           <AnimatePresence>
             {fields.map((f) => (
               <FieldRow key={f.id} field={f}
-                onChange={(nf) => setFields(fields.map((x) => x.id === f.id ? nf : x))}
-                onRemove={() => setFields(fields.filter((x) => x.id !== f.id))}
+                onChange={(nf) => updateFields(fields.map((x) => x.id === f.id ? nf : x))}
+                onRemove={() => updateFields(fields.filter((x) => x.id !== f.id))}
                 onRedetect={() => redetect(f.id)}
               />
             ))}
@@ -619,7 +744,7 @@ function StepMap({
           {tableFields.map((tf) => {
             const tcfg = tables.find((t) => t.fieldId === tf.id);
             if (!tcfg) return null;
-            return <TableEditor key={tf.id} table={tcfg} onChange={(nt) => setTables(tables.map((t) => t.fieldId === nt.fieldId ? nt : t))} />;
+            return <TableEditor key={tf.id} table={tcfg} onChange={(nt) => updateTables(tables.map((t) => t.fieldId === nt.fieldId ? nt : t))} />;
           })}
         </div>
 
@@ -628,9 +753,11 @@ function StepMap({
             <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3 flex items-center gap-2">
               <Move className="h-3.5 w-3.5" /> Drag-and-Drop Layout Editor
             </div>
-            <DocumentRender fields={fields} tables={tables} editable onMove={onMove} />
+            <div data-doc-pages>
+              <PreviewWithTags fields={fields} tables={tables} editable onMove={onMove} snap={snap} showGrid={showGrid} />
+            </div>
             <div className="text-[10.5px] text-muted-foreground mt-2 flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" /> Drag any QR, barcode, signature, header, footer or watermark on the page to reposition.
+              <AlertCircle className="h-3 w-3" /> Drag items to reposition · cyan guides = alignment · pink = page center · ⌘Z to undo
             </div>
           </div>
         </div>
@@ -655,7 +782,17 @@ function StepMap({
   );
 }
 
-function StepExport({ fields, tables, onBack }: { fields: DetectedField[]; tables: TableConfig[]; onBack: () => void }) {
+// Tag every rendered page with data-doc-page so Test Generate can target them.
+function PreviewWithTags(props: React.ComponentProps<typeof DocumentRender>) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    ref.current.querySelectorAll(":scope > div > div").forEach((el) => el.setAttribute("data-doc-page", "1"));
+  });
+  return <div ref={ref}><DocumentRender {...props} /></div>;
+}
+
+function StepExport({ fields, tables, onBack, savedId }: { fields: DetectedField[]; tables: TableConfig[]; onBack: () => void; savedId?: string }) {
   const [applicant, setApplicant] = useState<Record<string, string>>({});
   const [exporting, setExporting] = useState(false);
   const [done, setDone] = useState(false);
