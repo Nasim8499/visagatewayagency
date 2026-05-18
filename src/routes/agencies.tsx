@@ -27,6 +27,12 @@ const agencies = [
 function AgenciesPage() {
   return (
     <AppShell>
+      <HeroSlider
+        slides={[
+          { eyebrow: "Partners", title: "Ethical recruitment — across nine source countries.", description: "Manage every overseas agency, performance score and placement pipeline from one prestigious cockpit.", image: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=1600&q=70" },
+          { eyebrow: "Performance", title: "Star-rated partners, transparent placements.", description: "See who delivers — placements YTD, growth trends and quality scores by source country.", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=70" },
+        ]}
+      />
       <PageHeader
         eyebrow="Network"
         title="Partner Agencies"
