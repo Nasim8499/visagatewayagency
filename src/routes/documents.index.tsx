@@ -57,12 +57,12 @@ function Dropzone({ onFiles }: { onFiles: (files: File[]) => void }) {
   }, [onFiles]);
 
   return (
-    <div
+    <Link
+      to="/documents/new"
       onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
       onDragLeave={() => setDrag(false)}
       onDrop={onDrop}
-      onClick={() => inputRef.current?.click()}
-      className={`cursor-pointer relative rounded-2xl border-2 border-dashed transition-all p-6 md:p-8 text-center bg-[oklch(0.97_0.02_258)] ${
+      className={`block cursor-pointer relative rounded-2xl border-2 border-dashed transition-all p-6 md:p-8 text-center bg-[oklch(0.97_0.02_258)] ${
         drag
           ? "border-[var(--navy)] bg-[oklch(0.94_0.04_258)]"
           : "border-[oklch(0.78_0.06_258)] hover:border-[var(--navy)]"
@@ -88,11 +88,11 @@ function Dropzone({ onFiles }: { onFiles: (files: File[]) => void }) {
       <p className="text-[12px] text-muted-foreground mt-1.5 max-w-sm mx-auto leading-relaxed">
         Upload your original document (PDF, DOCX, PNG, JPG). Our AI will scan and create a reusable template.
       </p>
-      <button className="mt-4 inline-flex items-center gap-2 bg-[var(--navy)] text-white rounded-xl px-5 py-2.5 text-[13px] font-semibold hover:brightness-110 transition">
+      <span className="mt-4 inline-flex items-center gap-2 bg-[var(--navy)] text-white rounded-xl px-5 py-2.5 text-[13px] font-semibold hover:brightness-110 transition">
         <Upload className="h-4 w-4" /> Upload Document
-      </button>
+      </span>
       <div className="mt-3 text-[11px] text-muted-foreground">or drag and drop here</div>
-    </div>
+    </Link>
   );
 }
 
