@@ -973,13 +973,13 @@ function NewTemplatePage() {
           <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
             <StepMap fields={fields} setFields={setFields} tables={tables} setTables={setTables}
               onNext={() => setStep(4)} onBack={() => setStep(savedId ? 3 : 2)}
-              onSave={onSave} savedName={savedName} isExisting={Boolean(savedId)}
+              onSave={onSave} savedName={savedName} isExisting={Boolean(savedId)} savedId={savedId}
             />
           </motion.div>
         )}
         {step === 4 && (
           <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-            <StepExport fields={fields} tables={tables} onBack={() => setStep(3)} />
+            <StepExport fields={fields} tables={tables} onBack={() => setStep(3)} savedId={savedId} />
           </motion.div>
         )}
       </AnimatePresence>
