@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { GlassCard, PageHeader } from "@/components/ui-bits";
+import { HeroSlider } from "@/components/HeroSlider";
 import { Handshake, Plus, Globe2, Star, TrendingUp, ArrowUpRight } from "lucide-react";
 import { motion } from "motion/react";
 
