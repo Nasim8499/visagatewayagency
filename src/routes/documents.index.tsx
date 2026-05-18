@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { StatCard, PageHeader } from "@/components/ui-bits";
+import { HeroSlider } from "@/components/HeroSlider";
 import {
   Upload, FileText, Search, Bell, Plus, ChevronRight,
   Cloud, Bot, Save, Sparkles, MoreVertical, Pencil, FileStack,
@@ -171,6 +172,13 @@ function DocumentsPage() {
 
   return (
     <AppShell>
+      <HeroSlider
+        slides={[
+          { eyebrow: "Document Hub", title: "Smart templates for global mobility.", description: "Upload once, generate infinite. AI maps every field — names, passports, signatures, QR.", image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1600&q=70" },
+          { eyebrow: "Automation", title: "From PDF to applicant-ready in seconds.", description: "Bulk-generate contracts, invoices and visa packs with one click — pixel-perfect every time.", image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=70" },
+          { eyebrow: "Precision", title: "Drag, snap, align — no layout drift.", description: "Our editor keeps QR, barcode and signatures locked to a 2% grid with alignment guides.", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=70" },
+        ]}
+      />
       <PageHeader
         eyebrow="Documents Template Engine"
         title="Documents Templates"

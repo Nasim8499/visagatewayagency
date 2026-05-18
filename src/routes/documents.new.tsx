@@ -361,12 +361,12 @@ function renderFieldVisual(f: DetectedField, applicant: Record<string, string>) 
 
 // One A4 page rendering with absolute positioning + table chunk
 function DocumentPage({
-  fields, table, applicant, tableSlice, isFirstPage, totalPages, pageNum, editable, onMove, refEl, snap, showGrid,
+  fields, table, applicant, tableSlice, isFirstPage, totalPages, pageNum, editable, onMove, refEl, snap, showGrid, overflowIds,
 }: {
   fields: DetectedField[]; table?: TableConfig; applicant: Record<string, string>;
   tableSlice: Record<string, string>[]; isFirstPage: boolean; totalPages: number; pageNum: number;
   editable?: boolean; onMove?: (id: string, x: number, y: number) => void; refEl?: React.Ref<HTMLDivElement>;
-  snap?: boolean; showGrid?: boolean;
+  snap?: boolean; showGrid?: boolean; overflowIds?: Set<string>;
 }) {
   const paperRef = useRef<HTMLDivElement>(null);
   const [guides, setGuides] = useState<{ v?: number; h?: number; cv?: boolean; ch?: boolean }>({});
@@ -499,41 +499,50 @@ function DocumentPage({
         )}
 
         {/* Absolute positioned items */}
-        {positioned.map((f) => (
-          <div
-            key={f.id}
-            onPointerDown={(e) => onDragStart(e, f.id)}
-            style={{
-              position: "absolute",
-              left: `${f.bbox.x}%`, top: `${f.bbox.y - 10}%`,
-              width: `${f.bbox.w}%`, height: `${f.bbox.h}%`,
-              cursor: editable ? "grab" : "default",
-              touchAction: "none",
-            }}
-            className={editable ? "outline-dashed outline-1 outline-[var(--navy)]/40 hover:outline-[var(--navy)] rounded-sm transition-colors" : ""}
-          >
-            <div className="w-full h-full flex items-center justify-center pointer-events-none">
-              {renderFieldVisual(f, applicant)}
-            </div>
-            {editable && (
-              <div className="absolute -top-4 left-0 text-[8px] font-bold text-[var(--navy)] bg-white/90 px-1 rounded pointer-events-none">
-                {f.label}
+        {positioned.map((f) => {
+          const isOverflow = overflowIds?.has(f.id);
+          return (
+            <div
+              key={f.id}
+              data-field-id={f.id}
+              onPointerDown={(e) => onDragStart(e, f.id)}
+              style={{
+                position: "absolute",
+                left: `${f.bbox.x}%`, top: `${f.bbox.y - 10}%`,
+                width: `${f.bbox.w}%`, height: `${f.bbox.h}%`,
+                cursor: editable ? "grab" : "default",
+                touchAction: "none",
+                boxShadow: isOverflow ? "0 0 0 2px #e11d48, 0 0 0 6px rgba(225,29,72,0.18)" : undefined,
+                animation: isOverflow ? "pulse 1.4s ease-in-out infinite" : undefined,
+              }}
+              className={editable ? "outline-dashed outline-1 outline-[var(--navy)]/40 hover:outline-[var(--navy)] rounded-sm transition-colors" : ""}
+            >
+              <div className="w-full h-full flex items-center justify-center pointer-events-none">
+                {renderFieldVisual(f, applicant)}
               </div>
-            )}
-          </div>
-        ))}
+              {editable && (
+                <div
+                  className="absolute -top-4 left-0 text-[8px] font-bold px-1 rounded pointer-events-none"
+                  style={{ color: isOverflow ? "#e11d48" : undefined, background: isOverflow ? "#fff1f2" : "rgba(255,255,255,0.9)" }}
+                >
+                  {isOverflow ? "⚠ " : ""}{f.label}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 function DocumentRender({
-  fields, tables, applicant = {}, editable, onMove, pageRefs, snap, showGrid,
+  fields, tables, applicant = {}, editable, onMove, pageRefs, snap, showGrid, overflowIds,
 }: {
   fields: DetectedField[]; tables: TableConfig[]; applicant?: Record<string, string>;
   editable?: boolean; onMove?: (id: string, x: number, y: number) => void;
   pageRefs?: React.MutableRefObject<(HTMLDivElement | null)[]>;
-  snap?: boolean; showGrid?: boolean;
+  snap?: boolean; showGrid?: boolean; overflowIds?: Set<string>;
 }) {
   const tableField = fields.find((f) => f.type === "table");
   const table = tableField ? tables.find((t) => t.fieldId === tableField.id) : undefined;
@@ -559,6 +568,7 @@ function DocumentRender({
             onMove={onMove}
             snap={snap}
             showGrid={showGrid}
+            overflowIds={overflowIds}
             refEl={(el) => { if (pageRefs) pageRefs.current[i] = el; }}
           />
         );
@@ -609,6 +619,8 @@ function StepMap({
   const [snap, setSnap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [testing, setTesting] = useState(false);
+  const [overflowIds, setOverflowIds] = useState<Set<string>>(new Set());
+  const [testReport, setTestReport] = useState<null | { pages: number; overflows: { id: string; label: string }[] }>(null);
 
   // History tracks { fields, tables } together
   type Snap = { fields: DetectedField[]; tables: TableConfig[] };
@@ -661,10 +673,13 @@ function StepMap({
 
   const testGenerate = async () => {
     setTesting(true);
-    // Render a temporary preview offscreen with mock data and export
-    const wrap = document.createElement("div");
-    wrap.style.cssText = "position:fixed;left:-9999px;top:0;width:600px;background:#fff;";
-    document.body.appendChild(wrap);
+    // 1) Validate pagination/overflow before exporting.
+    const positioned = hist.state.fields.filter((f) => isPositionable(f.type));
+    const overflows = positioned
+      .filter((f) => f.bbox.x + f.bbox.w > 100.5 || f.bbox.y + f.bbox.h > 100.5 || f.bbox.x < 0 || f.bbox.y < 0)
+      .map((f) => ({ id: f.id, label: f.label }));
+    setOverflowIds(new Set(overflows.map((o) => o.id)));
+
     const mock: Record<string, string> = {
       FULL_NAME: "Test Applicant", PASSPORT_NUMBER: "X00000000", DATE_OF_BIRTH: "1990-01-01",
       NATIONALITY: "Bangladeshi", EMPLOYER_NAME: "Demo Co. Pte. Ltd.", JOB_TITLE: "Sample Role",
@@ -672,8 +687,7 @@ function StepMap({
       ISSUE_DATE: "2026-05-18", EXPIRY_DATE: "2028-05-17",
     };
     try {
-      // Use ReactDOM unstable batched render is overkill — instead, leverage existing preview pages via DOM clone.
-      // Simpler: re-export current visible preview pages.
+      // Re-export current visible preview pages.
       const visible = document.querySelectorAll<HTMLDivElement>("[data-doc-page]");
       const pdf = new jsPDF({ unit: "mm", format: "a4" });
       const w = pdf.internal.pageSize.getWidth();
@@ -687,11 +701,14 @@ function StepMap({
         pdf.addImage(img, "PNG", 0, 0, w, Math.min(imgH, h));
       }
       pdf.save(`VisaHOBe-TEST-${Date.now()}.pdf`);
-      if (savedId) appendAudit(savedId, { type: "test_generated", message: `Test PDF generated (${pages.length} pages)`, meta: { pages: pages.length } });
+      setTestReport({ pages: pages.length, overflows });
+      if (savedId) appendAudit(savedId, {
+        type: "test_generated",
+        message: `Test PDF generated (${pages.length} pages, ${overflows.length} overflow${overflows.length === 1 ? "" : "s"})`,
+        meta: { pages: pages.length, overflows: overflows.length },
+      });
     } finally {
-      document.body.removeChild(wrap);
       setTesting(false);
-      // suppress unused mock warning
       void mock;
     }
   };
@@ -709,6 +726,32 @@ function StepMap({
           {lowConf > 0 && <div className="text-amber-700 font-bold">{lowConf} need review</div>}
         </div>
       </div>
+
+      {/* Test Generate report banner */}
+      {testReport && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+          className={`card-surface p-3 md:p-4 border-l-4 flex items-start gap-3 ${testReport.overflows.length > 0 ? "border-rose-500 bg-rose-50/40" : "border-emerald-500 bg-emerald-50/40"}`}
+        >
+          {testReport.overflows.length > 0 ? <AlertCircle className="h-5 w-5 text-rose-600 shrink-0" /> : <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />}
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-[var(--navy)]">
+              {testReport.overflows.length > 0
+                ? `${testReport.overflows.length} field${testReport.overflows.length === 1 ? "" : "s"} overflow the page · ${testReport.pages} page${testReport.pages === 1 ? "" : "s"} rendered`
+                : `Pagination clean · ${testReport.pages} page${testReport.pages === 1 ? "" : "s"} rendered, no overflow detected`}
+            </div>
+            {testReport.overflows.length > 0 && (
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Highlighted in red on the preview — drag them back inside the page bounds before saving a version:{" "}
+                <span className="font-semibold text-rose-700">{testReport.overflows.map((o) => o.label).join(", ")}</span>
+              </div>
+            )}
+          </div>
+          <button onClick={() => { setTestReport(null); setOverflowIds(new Set()); }} className="text-xs text-muted-foreground hover:text-[var(--navy)] shrink-0">
+            <X className="h-4 w-4" />
+          </button>
+        </motion.div>
+      )}
 
       {/* Editor toolbar */}
       <div className="card-surface p-2 flex items-center gap-1 flex-wrap">
@@ -756,7 +799,7 @@ function StepMap({
               <Move className="h-3.5 w-3.5" /> Drag-and-Drop Layout Editor
             </div>
             <div data-doc-pages>
-              <PreviewWithTags fields={liveFields} tables={liveTables} editable onMove={onMove} snap={snap} showGrid={showGrid} />
+              <PreviewWithTags fields={liveFields} tables={liveTables} editable onMove={onMove} snap={snap} showGrid={showGrid} overflowIds={overflowIds} />
             </div>
             <div className="text-[10.5px] text-muted-foreground mt-2 flex items-center gap-1">
               <AlertCircle className="h-3 w-3" /> Drag items to reposition · cyan guides = alignment · pink = page center · ⌘Z to undo

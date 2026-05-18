@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorkersRouteImport } from './routes/workers'
 import { Route as EmployersRouteImport } from './routes/employers'
 import { Route as AgenciesRouteImport } from './routes/agencies'
 import { Route as IndexRouteImport } from './routes/index'
@@ -18,6 +19,11 @@ import { Route as DocumentsSavedRouteImport } from './routes/documents.saved'
 import { Route as DocumentsNewRouteImport } from './routes/documents.new'
 import { Route as DocumentsTemplateIdRouteImport } from './routes/documents.$templateId'
 
+const WorkersRoute = WorkersRouteImport.update({
+  id: '/workers',
+  path: '/workers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmployersRoute = EmployersRouteImport.update({
   id: '/employers',
   path: '/employers',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agencies': typeof AgenciesRoute
   '/employers': typeof EmployersRoute
+  '/workers': typeof WorkersRoute
   '/documents/$templateId': typeof DocumentsTemplateIdRoute
   '/documents/new': typeof DocumentsNewRoute
   '/documents/saved': typeof DocumentsSavedRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agencies': typeof AgenciesRoute
   '/employers': typeof EmployersRoute
+  '/workers': typeof WorkersRoute
   '/documents/$templateId': typeof DocumentsTemplateIdRoute
   '/documents/new': typeof DocumentsNewRoute
   '/documents/saved': typeof DocumentsSavedRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/agencies': typeof AgenciesRoute
   '/employers': typeof EmployersRoute
+  '/workers': typeof WorkersRoute
   '/documents/$templateId': typeof DocumentsTemplateIdRoute
   '/documents/new': typeof DocumentsNewRoute
   '/documents/saved': typeof DocumentsSavedRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agencies'
     | '/employers'
+    | '/workers'
     | '/documents/$templateId'
     | '/documents/new'
     | '/documents/saved'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agencies'
     | '/employers'
+    | '/workers'
     | '/documents/$templateId'
     | '/documents/new'
     | '/documents/saved'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agencies'
     | '/employers'
+    | '/workers'
     | '/documents/$templateId'
     | '/documents/new'
     | '/documents/saved'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgenciesRoute: typeof AgenciesRoute
   EmployersRoute: typeof EmployersRoute
+  WorkersRoute: typeof WorkersRoute
   DocumentsTemplateIdRoute: typeof DocumentsTemplateIdRoute
   DocumentsNewRoute: typeof DocumentsNewRoute
   DocumentsSavedRoute: typeof DocumentsSavedRoute
@@ -136,6 +149,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/workers': {
+      id: '/workers'
+      path: '/workers'
+      fullPath: '/workers'
+      preLoaderRoute: typeof WorkersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/employers': {
       id: '/employers'
       path: '/employers'
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgenciesRoute: AgenciesRoute,
   EmployersRoute: EmployersRoute,
+  WorkersRoute: WorkersRoute,
   DocumentsTemplateIdRoute: DocumentsTemplateIdRoute,
   DocumentsNewRoute: DocumentsNewRoute,
   DocumentsSavedRoute: DocumentsSavedRoute,
