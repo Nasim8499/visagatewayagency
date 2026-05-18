@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, FileText, FilePlus2, Files, Library, FolderTree,
-  Database, PenTool, QrCode, Settings, UsersRound, ClipboardList, Trash2,
+  LayoutDashboard, FileText, FilePlus2, Library,
+  FolderTree, Database, UsersRound,
   Bell, Plane, Rocket, ChevronDown, Menu, X, HardHat,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
