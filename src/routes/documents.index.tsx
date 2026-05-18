@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { StatCard, PageHeader } from "@/components/ui-bits";
+import { HeroSlider } from "@/components/HeroSlider";
 import {
   Upload, FileText, Search, Bell, Plus, ChevronRight,
   Cloud, Bot, Save, Sparkles, MoreVertical, Pencil, FileStack,
@@ -171,6 +172,7 @@ function DocumentsPage() {
 
   return (
     <AppShell>
+      <div className="mb-6"><HeroSlider /></div>
       <PageHeader
         eyebrow="Documents Template Engine"
         title="Documents Templates"

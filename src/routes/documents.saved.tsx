@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { PageHeader } from "@/components/ui-bits";
+import { HeroSlider } from "@/components/HeroSlider";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import {
@@ -32,6 +33,7 @@ function SavedPage() {
 
   return (
     <AppShell>
+      <div className="mb-6"><HeroSlider /></div>
       <PageHeader
         eyebrow="My Library"
         title="Saved Smart Templates"
