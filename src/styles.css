@@ -134,6 +134,25 @@
       linear-gradient(180deg, #ffffff 0%, #f7f8fb 100%);
     box-shadow: 0 4px 12px -4px rgba(15, 36, 71, 0.08), inset 0 0 0 1px rgba(15, 36, 71, 0.06);
   }
+  /* Back-compat aliases (light theme) */
+  .glass {
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    border-radius: 1rem;
+  }
+  .glass-strong {
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-elevated);
+    border-radius: 1rem;
+  }
+  .gradient-text {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap");
