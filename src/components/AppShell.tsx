@@ -190,8 +190,13 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [open]);
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
 
   return (
     <AnimatePresence>
@@ -201,24 +206,27 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             onClick={onClose}
-            className="md:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="md:hidden fixed inset-0 z-50 bg-black/55 backdrop-blur-[3px]"
           />
           <motion.aside
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 280 }}
+            initial={{ x: "-100%", opacity: 0.4 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "-100%", opacity: 0.4 }}
+            transition={{ type: "spring", damping: 32, stiffness: 320, mass: 0.9 }}
             className="md:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] shadow-2xl"
           >
-            <button
+            <motion.button
               onClick={onClose}
               aria-label="Close menu"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15, duration: 0.25 }}
               className="absolute top-4 right-3 z-10 h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
             >
               <X className="h-4 w-4" />
-            </button>
+            </motion.button>
             <SidebarContent onNavigate={onClose} />
           </motion.aside>
         </>
@@ -227,12 +235,26 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
   );
 }
 
+const DRAWER_KEY = "vh.drawer.open";
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [menuOpen, setMenuOpen] = useState(false);
+  // Lazy initializer reads sessionStorage so the drawer's last state is remembered per session.
+  const [menuOpen, setMenuOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try { return window.sessionStorage.getItem(DRAWER_KEY) === "1"; } catch { return false; }
+  });
 
-  // Auto-close drawer on route change
-  useEffect(() => { setMenuOpen(false); }, [pathname]);
+  // Persist drawer state per session
+  useEffect(() => {
+    try { window.sessionStorage.setItem(DRAWER_KEY, menuOpen ? "1" : "0"); } catch { /* noop */ }
+  }, [menuOpen]);
+
+  // Auto-close drawer after route change (don't close on every render — only when path changes)
+  useEffect(() => {
+    setMenuOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   return (
     <div className="min-h-screen">
@@ -243,7 +265,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <MobileDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <div className="md:ml-[260px] flex flex-col min-h-screen">
-        <MobileHeader onMenu={() => setMenuOpen(true)} />
+        <MobileHeader onMenu={() => setMenuOpen((v) => !v)} />
         <main className="flex-1 px-4 md:px-8 py-5 md:py-8">
           <AnimatePresence mode="wait">
             <motion.div
