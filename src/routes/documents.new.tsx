@@ -799,7 +799,7 @@ function StepMap({
               <Move className="h-3.5 w-3.5" /> Drag-and-Drop Layout Editor
             </div>
             <div data-doc-pages>
-              <PreviewWithTags fields={liveFields} tables={liveTables} editable onMove={onMove} snap={snap} showGrid={showGrid} />
+              <PreviewWithTags fields={liveFields} tables={liveTables} editable onMove={onMove} snap={snap} showGrid={showGrid} overflowIds={overflowIds} />
             </div>
             <div className="text-[10.5px] text-muted-foreground mt-2 flex items-center gap-1">
               <AlertCircle className="h-3 w-3" /> Drag items to reposition · cyan guides = alignment · pink = page center · ⌘Z to undo
