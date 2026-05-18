@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui-bits";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import {
-  FileText, Copy, Trash2, Pencil, History, Plus, Sparkles, Calendar, Layers,
+  FileText, Copy, Trash2, Pencil, History, Plus, Sparkles, Calendar, Layers, ClipboardList,
 } from "lucide-react";
 import {
   listTemplates, duplicateTemplate, deleteTemplate, renameTemplate,
