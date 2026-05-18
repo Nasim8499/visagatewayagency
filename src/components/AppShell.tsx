@@ -63,14 +63,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-3">
-        {navItems.map(({ to, label, icon: Icon, exact }, i) => {
-          const active = exact ? pathname === to : pathname === to;
-          const isTemplates = label === "Templates" && pathname.startsWith("/documents") && !pathname.includes("variables") && !pathname.includes("saved");
-          const isSaved = label === "Saved Library" && pathname === "/documents/saved";
-          const isActive = active || isTemplates || isSaved;
+        {navItems.map(({ to, label, icon: Icon, exact, match }) => {
+          const isActive = match ? match(pathname) : exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
           return (
             <Link
-              key={`${label}-${i}`}
+              key={to + label}
               to={to}
               onClick={onNavigate}
               className={`relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-all mb-0.5 ${
