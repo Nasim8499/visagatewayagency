@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { motion, AnimatePresence } from "motion/react";
-import { useCallback, useMemo, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import {
   Upload, FileText, ScanLine, Brain, Sparkles, Check, X, ArrowRight, ArrowLeft,
   Type, Table as TableIcon, QrCode, Barcode, PenLine, Image as ImageIcon,
