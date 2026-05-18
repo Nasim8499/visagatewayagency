@@ -191,9 +191,9 @@ function DocumentsPage() {
                 12
               </span>
             </button>
-            <button className="inline-flex items-center gap-2 bg-[var(--navy)] text-white rounded-xl px-4 py-2.5 text-sm font-semibold hover:brightness-110 transition shadow-sm">
+            <Link to="/documents/new" className="inline-flex items-center gap-2 bg-[var(--navy)] text-white rounded-xl px-4 py-2.5 text-sm font-semibold hover:brightness-110 transition shadow-sm">
               <Plus className="h-4 w-4" /> New Template
-            </button>
+            </Link>
           </>
         }
       />
