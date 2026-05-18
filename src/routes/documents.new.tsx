@@ -499,29 +499,38 @@ function DocumentPage({
         )}
 
         {/* Absolute positioned items */}
-        {positioned.map((f) => (
-          <div
-            key={f.id}
-            onPointerDown={(e) => onDragStart(e, f.id)}
-            style={{
-              position: "absolute",
-              left: `${f.bbox.x}%`, top: `${f.bbox.y - 10}%`,
-              width: `${f.bbox.w}%`, height: `${f.bbox.h}%`,
-              cursor: editable ? "grab" : "default",
-              touchAction: "none",
-            }}
-            className={editable ? "outline-dashed outline-1 outline-[var(--navy)]/40 hover:outline-[var(--navy)] rounded-sm transition-colors" : ""}
-          >
-            <div className="w-full h-full flex items-center justify-center pointer-events-none">
-              {renderFieldVisual(f, applicant)}
-            </div>
-            {editable && (
-              <div className="absolute -top-4 left-0 text-[8px] font-bold text-[var(--navy)] bg-white/90 px-1 rounded pointer-events-none">
-                {f.label}
+        {positioned.map((f) => {
+          const isOverflow = overflowIds?.has(f.id);
+          return (
+            <div
+              key={f.id}
+              data-field-id={f.id}
+              onPointerDown={(e) => onDragStart(e, f.id)}
+              style={{
+                position: "absolute",
+                left: `${f.bbox.x}%`, top: `${f.bbox.y - 10}%`,
+                width: `${f.bbox.w}%`, height: `${f.bbox.h}%`,
+                cursor: editable ? "grab" : "default",
+                touchAction: "none",
+                boxShadow: isOverflow ? "0 0 0 2px #e11d48, 0 0 0 6px rgba(225,29,72,0.18)" : undefined,
+                animation: isOverflow ? "pulse 1.4s ease-in-out infinite" : undefined,
+              }}
+              className={editable ? "outline-dashed outline-1 outline-[var(--navy)]/40 hover:outline-[var(--navy)] rounded-sm transition-colors" : ""}
+            >
+              <div className="w-full h-full flex items-center justify-center pointer-events-none">
+                {renderFieldVisual(f, applicant)}
               </div>
-            )}
-          </div>
-        ))}
+              {editable && (
+                <div
+                  className="absolute -top-4 left-0 text-[8px] font-bold px-1 rounded pointer-events-none"
+                  style={{ color: isOverflow ? "#e11d48" : undefined, background: isOverflow ? "#fff1f2" : "rgba(255,255,255,0.9)" }}
+                >
+                  {isOverflow ? "⚠ " : ""}{f.label}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
