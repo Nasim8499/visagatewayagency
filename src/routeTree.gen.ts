@@ -27,6 +27,7 @@ import { Route as DocumentsVariablesRouteImport } from './routes/documents.varia
 import { Route as DocumentsSavedRouteImport } from './routes/documents.saved'
 import { Route as DocumentsNewRouteImport } from './routes/documents.new'
 import { Route as DocumentsTemplateIdRouteImport } from './routes/documents.$templateId'
+import { Route as ApiChatRouteImport } from './routes/api.chat'
 
 const SamplePdfTrainingRoute = SamplePdfTrainingRouteImport.update({
   id: '/sample-pdf-training',
@@ -118,6 +119,11 @@ const DocumentsTemplateIdRoute = DocumentsTemplateIdRouteImport.update({
   path: '/documents/$templateId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/model-connect': typeof ModelConnectRoute
   '/passport-upload': typeof PassportUploadRoute
   '/sample-pdf-training': typeof SamplePdfTrainingRoute
+  '/api/chat': typeof ApiChatRoute
   '/documents/$templateId': typeof DocumentsTemplateIdRoute
   '/documents/new': typeof DocumentsNewRoute
   '/documents/saved': typeof DocumentsSavedRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/model-connect': typeof ModelConnectRoute
   '/passport-upload': typeof PassportUploadRoute
   '/sample-pdf-training': typeof SamplePdfTrainingRoute
+  '/api/chat': typeof ApiChatRoute
   '/documents/$templateId': typeof DocumentsTemplateIdRoute
   '/documents/new': typeof DocumentsNewRoute
   '/documents/saved': typeof DocumentsSavedRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/model-connect': typeof ModelConnectRoute
   '/passport-upload': typeof PassportUploadRoute
   '/sample-pdf-training': typeof SamplePdfTrainingRoute
+  '/api/chat': typeof ApiChatRoute
   '/documents/$templateId': typeof DocumentsTemplateIdRoute
   '/documents/new': typeof DocumentsNewRoute
   '/documents/saved': typeof DocumentsSavedRoute
@@ -196,6 +205,7 @@ export interface FileRouteTypes {
     | '/model-connect'
     | '/passport-upload'
     | '/sample-pdf-training'
+    | '/api/chat'
     | '/documents/$templateId'
     | '/documents/new'
     | '/documents/saved'
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/model-connect'
     | '/passport-upload'
     | '/sample-pdf-training'
+    | '/api/chat'
     | '/documents/$templateId'
     | '/documents/new'
     | '/documents/saved'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/model-connect'
     | '/passport-upload'
     | '/sample-pdf-training'
+    | '/api/chat'
     | '/documents/$templateId'
     | '/documents/new'
     | '/documents/saved'
@@ -257,6 +269,7 @@ export interface RootRouteChildren {
   ModelConnectRoute: typeof ModelConnectRoute
   PassportUploadRoute: typeof PassportUploadRoute
   SamplePdfTrainingRoute: typeof SamplePdfTrainingRoute
+  ApiChatRoute: typeof ApiChatRoute
   DocumentsTemplateIdRoute: typeof DocumentsTemplateIdRoute
   DocumentsNewRoute: typeof DocumentsNewRoute
   DocumentsSavedRoute: typeof DocumentsSavedRoute
@@ -392,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocumentsTemplateIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -409,6 +429,7 @@ const rootRouteChildren: RootRouteChildren = {
   ModelConnectRoute: ModelConnectRoute,
   PassportUploadRoute: PassportUploadRoute,
   SamplePdfTrainingRoute: SamplePdfTrainingRoute,
+  ApiChatRoute: ApiChatRoute,
   DocumentsTemplateIdRoute: DocumentsTemplateIdRoute,
   DocumentsNewRoute: DocumentsNewRoute,
   DocumentsSavedRoute: DocumentsSavedRoute,
