@@ -1,33 +1,30 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, FileText, FilePlus2, Files, Library, FolderTree,
-  Database, PenTool, QrCode, Settings, UsersRound, ClipboardList, Trash2,
+  LayoutDashboard, FileText, Upload, FilePlus2, Globe, FileText as Doc, UserCheck, FileTextIcon, FileDollar, Checklist, BookOpen, Settings, Cpu,
   Bell, Plane, Rocket, ChevronDown, Home, User, Plus,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { type ReactNode } from "react";
 
 type NavItem = {
-  to: "/" | "/employers" | "/agencies" | "/documents" | "/documents/variables";
+  to: string;
   label: string;
-  icon: typeof LayoutDashboard;
+  icon: any;
   exact?: boolean;
 };
 
 const navItems: NavItem[] = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/documents", label: "Templates", icon: FileText, exact: true },
-  { to: "/documents", label: "Create Document", icon: FilePlus2 },
-  { to: "/documents", label: "Documents", icon: Files },
-  { to: "/documents", label: "Template Library", icon: Library },
-  { to: "/employers", label: "Categories", icon: FolderTree },
-  { to: "/documents/variables", label: "Data Fields", icon: Database },
-  { to: "/agencies", label: "Page Designer", icon: PenTool },
-  { to: "/documents/variables", label: "QR / Barcode", icon: QrCode },
-  { to: "/employers", label: "Settings", icon: Settings },
-  { to: "/agencies", label: "Team Access", icon: UsersRound },
-  { to: "/documents", label: "Activity Log", icon: ClipboardList },
-  { to: "/documents", label: "Trash", icon: Trash2 },
+  { to: "/ai-agent", label: "AI Agent", icon: Cpu, exact: true },
+  { to: "/passport-upload", label: "Passport Upload", icon: Upload },
+  { to: "/document-generator", label: "Document Generator", icon: FilePlus2 },
+  { to: "/country-engine", label: "Country Engine", icon: Globe },
+  { to: "/employee-forms", label: "Employee Forms", icon: UserCheck },
+  { to: "/employee-agreement", label: "Employee Agreement", icon: BookOpen },
+  { to: "/invoice", label: "Invoice System", icon: FileDollar },
+  { to: "/checklist", label: "Checklist", icon: Checklist },
+  { to: "/sample-training", label: "Sample PDF Training", icon: Doc },
+  { to: "/admin-settings", label: "Admin Settings", icon: Settings },
+  { to: "/model-connect", label: "Model Connect", icon: Cpu },
 ];
 
 function Logo() {
@@ -60,20 +57,17 @@ function SidebarContent() {
       <nav className="flex-1 overflow-y-auto px-3 pb-3">
         {navItems.map(({ to, label, icon: Icon, exact }, i) => {
           const active = exact ? pathname === to : pathname === to;
-          // Mark "Templates" as active when on /documents
-          const isTemplates = label === "Templates" && pathname.startsWith("/documents") && !pathname.includes("variables");
-          const isActive = active || isTemplates;
           return (
             <Link
               key={`${label}-${i}`}
               to={to}
               className={`relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-all mb-0.5 ${
-                isActive
+                active
                   ? "bg-white text-[oklch(0.24_0.08_258)] shadow-sm"
                   : "text-white/75 hover:text-white hover:bg-white/[0.06]"
               }`}
             >
-              <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.4 : 2} />
+              <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={active ? 2.4 : 2} />
               <span className="truncate">{label}</span>
             </Link>
           );
@@ -117,23 +111,9 @@ function SidebarContent() {
   );
 }
 
-const pageTitleMap: Record<string, string> = {
-  "/": "Dashboard",
-  "/employers": "Employers",
-  "/agencies": "Partner Agencies",
-  "/documents": "Templates",
-  "/documents/variables": "Data Fields",
-};
-
-function getTitle(path: string) {
-  if (pageTitleMap[path]) return pageTitleMap[path];
-  if (path.startsWith("/documents/")) return "Template";
-  return "VisaHOBe";
-}
-
 function MobileHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const title = getTitle(pathname);
+  const title = "VisaHOBe";
 
   return (
     <header className="md:hidden sticky top-0 z-40 bg-[var(--navy)] text-white">
@@ -177,13 +157,12 @@ function MobileHeader() {
 
 function MobileBottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const tabs: { to: "/" | "/documents" | "/employers"; label: string; icon: typeof Home; match: (p: string) => boolean }[] = [
-    { to: "/", label: "Home", icon: Home, match: (p) => p === "/" },
-    { to: "/documents", label: "Templates", icon: FileText, match: (p) => p.startsWith("/documents") && !p.includes("variables") },
+  const tabs = [
+    { to: "/ai-agent", label: "Agent", icon: Home, match: (p: string) => p === "/ai-agent" },
+    { to: "/document-generator", label: "Docs", icon: FileText, match: (p: string) => p.startsWith("/document-generator") },
   ];
-  const right: { to: "/documents/variables" | "/employers"; label: string; icon: typeof Home; match: (p: string) => boolean }[] = [
-    { to: "/documents/variables", label: "Documents", icon: Files, match: (p) => p.includes("variables") },
-    { to: "/employers", label: "Profile", icon: User, match: (p) => p === "/employers" || p === "/agencies" },
+  const right = [
+    { to: "/employee-forms", label: "Forms", icon: User, match: (p: string) => p === "/employee-forms" },
   ];
 
   return (
@@ -198,7 +177,7 @@ function MobileBottomNav() {
         );
       })}
       <Link
-        to="/documents"
+        to="/document-generator"
         className="-mt-8 h-14 w-14 rounded-full gradient-red flex items-center justify-center shadow-[var(--shadow-glow)] ring-4 ring-white"
         aria-label="Create"
       >
