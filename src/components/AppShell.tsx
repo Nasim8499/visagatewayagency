@@ -1,33 +1,30 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, FileText, FilePlus2, Files, Library, FolderTree,
-  Database, PenTool, QrCode, Settings, UsersRound, ClipboardList, Trash2,
-  Bell, Plane, Rocket, ChevronDown, Home, User, Plus,
+  Sparkles, ScanLine, FileText, Globe2, ClipboardList, FileSignature,
+  Receipt, CheckSquare, GraduationCap, Settings, Plug, Plane, ChevronDown,
+  Bell, Menu, X, Rocket,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 type NavItem = {
-  to: "/" | "/employers" | "/agencies" | "/documents" | "/documents/variables";
+  to: string;
   label: string;
-  icon: typeof LayoutDashboard;
-  exact?: boolean;
+  icon: typeof Sparkles;
 };
 
 const navItems: NavItem[] = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/documents", label: "Templates", icon: FileText, exact: true },
-  { to: "/documents", label: "Create Document", icon: FilePlus2 },
-  { to: "/documents", label: "Documents", icon: Files },
-  { to: "/documents", label: "Template Library", icon: Library },
-  { to: "/employers", label: "Categories", icon: FolderTree },
-  { to: "/documents/variables", label: "Data Fields", icon: Database },
-  { to: "/agencies", label: "Page Designer", icon: PenTool },
-  { to: "/documents/variables", label: "QR / Barcode", icon: QrCode },
-  { to: "/employers", label: "Settings", icon: Settings },
-  { to: "/agencies", label: "Team Access", icon: UsersRound },
-  { to: "/documents", label: "Activity Log", icon: ClipboardList },
-  { to: "/documents", label: "Trash", icon: Trash2 },
+  { to: "/", label: "AI Agent", icon: Sparkles },
+  { to: "/passport-upload", label: "Passport Upload", icon: ScanLine },
+  { to: "/document-generator", label: "Document Generator", icon: FileText },
+  { to: "/country-engine", label: "Country Engine", icon: Globe2 },
+  { to: "/employee-forms", label: "Employee Forms", icon: ClipboardList },
+  { to: "/employee-agreement", label: "Employee Agreement", icon: FileSignature },
+  { to: "/invoice-system", label: "Invoice System", icon: Receipt },
+  { to: "/checklist", label: "Checklist", icon: CheckSquare },
+  { to: "/sample-pdf-training", label: "Sample PDF Training", icon: GraduationCap },
+  { to: "/admin-settings", label: "Admin Settings", icon: Settings },
+  { to: "/model-connect", label: "Model Connect", icon: Plug },
 ];
 
 function Logo() {
@@ -38,17 +35,17 @@ function Logo() {
       </div>
       <div className="leading-tight">
         <div className="font-display font-extrabold text-[15px] tracking-tight text-white">
-          VisaHOBe <span className="font-medium opacity-80">PTE. LTD.</span>
+          VisaHOBe <span className="font-medium opacity-80">AI</span>
         </div>
         <div className="text-[9px] text-white/60 uppercase tracking-[0.18em] font-semibold">
-          Global Manpower & Visa Partner
+          Visa Agent Platform
         </div>
       </div>
     </Link>
   );
 }
 
-function SidebarContent() {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
@@ -58,15 +55,13 @@ function SidebarContent() {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-3">
-        {navItems.map(({ to, label, icon: Icon, exact }, i) => {
-          const active = exact ? pathname === to : pathname === to;
-          // Mark "Templates" as active when on /documents
-          const isTemplates = label === "Templates" && pathname.startsWith("/documents") && !pathname.includes("variables");
-          const isActive = active || isTemplates;
+        {navItems.map(({ to, label, icon: Icon }) => {
+          const isActive = pathname === to;
           return (
             <Link
-              key={`${label}-${i}`}
-              to={to}
+              key={label}
+              to={to as "/"}
+              onClick={onNavigate}
               className={`relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-all mb-0.5 ${
                 isActive
                   ? "bg-white text-[oklch(0.24_0.08_258)] shadow-sm"
@@ -80,7 +75,6 @@ function SidebarContent() {
         })}
       </nav>
 
-      {/* Upgrade card */}
       <div className="px-3 pb-3">
         <div className="rounded-2xl p-4 bg-white/[0.05] border border-white/[0.08]">
           <div className="flex items-start gap-2 mb-2">
@@ -88,9 +82,9 @@ function SidebarContent() {
               <Rocket className="h-4 w-4 text-white" />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-white leading-tight">Upgrade Plan</div>
+              <div className="text-[13px] font-bold text-white leading-tight">Pro Plan</div>
               <div className="text-[11px] text-white/60 leading-snug mt-0.5">
-                Unlock prestigious features and automate your document workflow.
+                Unlock unlimited AI requests & all models.
               </div>
             </div>
           </div>
@@ -100,7 +94,6 @@ function SidebarContent() {
         </div>
       </div>
 
-      {/* Profile card */}
       <div className="px-3 pb-4">
         <div className="rounded-2xl p-2.5 bg-white/[0.05] border border-white/[0.08] flex items-center gap-3">
           <div className="h-9 w-9 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 flex items-center justify-center font-bold text-white text-xs ring-2 ring-white/20">
@@ -117,36 +110,25 @@ function SidebarContent() {
   );
 }
 
-const pageTitleMap: Record<string, string> = {
-  "/": "Dashboard",
-  "/employers": "Employers",
-  "/agencies": "Partner Agencies",
-  "/documents": "Templates",
-  "/documents/variables": "Data Fields",
-};
-
 function getTitle(path: string) {
-  if (pageTitleMap[path]) return pageTitleMap[path];
-  if (path.startsWith("/documents/")) return "Template";
-  return "VisaHOBe";
+  const item = navItems.find((n) => n.to === path);
+  return item?.label ?? "VisaHOBe";
 }
 
-function MobileHeader() {
+function MobileHeader({ onMenu }: { onMenu: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const title = getTitle(pathname);
 
   return (
     <header className="md:hidden sticky top-0 z-40 bg-[var(--navy)] text-white">
       <div className="flex items-center justify-between px-4 h-14 gap-3">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg gradient-red flex items-center justify-center">
-            <Plane className="h-4 w-4 text-white -rotate-45" strokeWidth={2.5} />
-          </div>
-          <div className="leading-tight">
-            <div className="text-[12px] font-extrabold tracking-tight">VisaHOBe</div>
-            <div className="text-[8px] text-white/60 uppercase tracking-[0.18em]">Visa Partner</div>
-          </div>
-        </Link>
+        <button
+          className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center"
+          aria-label="Menu"
+          onClick={onMenu}
+        >
+          <Menu className="h-5 w-5" />
+        </button>
         <div className="flex-1 text-center min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
@@ -162,7 +144,7 @@ function MobileHeader() {
           </AnimatePresence>
         </div>
         <button
-          className="relative h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/15 transition shrink-0"
+          className="relative h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0"
           aria-label="Notifications"
         >
           <Bell className="h-[18px] w-[18px]" />
@@ -175,61 +157,46 @@ function MobileHeader() {
   );
 }
 
-function MobileBottomNav() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const tabs: { to: "/" | "/documents" | "/employers"; label: string; icon: typeof Home; match: (p: string) => boolean }[] = [
-    { to: "/", label: "Home", icon: Home, match: (p) => p === "/" },
-    { to: "/documents", label: "Templates", icon: FileText, match: (p) => p.startsWith("/documents") && !p.includes("variables") },
-  ];
-  const right: { to: "/documents/variables" | "/employers"; label: string; icon: typeof Home; match: (p: string) => boolean }[] = [
-    { to: "/documents/variables", label: "Documents", icon: Files, match: (p) => p.includes("variables") },
-    { to: "/employers", label: "Profile", icon: User, match: (p) => p === "/employers" || p === "/agencies" },
-  ];
-
-  return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-border h-[68px] flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom)]">
-      {tabs.map((t) => {
-        const active = t.match(pathname);
-        return (
-          <Link key={t.label} to={t.to} className="flex flex-col items-center justify-center gap-1 px-3 py-1.5 min-w-[56px]">
-            <t.icon className={`h-[22px] w-[22px] ${active ? "text-[var(--navy)]" : "text-muted-foreground"}`} strokeWidth={active ? 2.4 : 2} />
-            <span className={`text-[10px] font-semibold ${active ? "text-[var(--navy)]" : "text-muted-foreground"}`}>{t.label}</span>
-          </Link>
-        );
-      })}
-      <Link
-        to="/documents"
-        className="-mt-8 h-14 w-14 rounded-full gradient-red flex items-center justify-center shadow-[var(--shadow-glow)] ring-4 ring-white"
-        aria-label="Create"
-      >
-        <Plus className="h-6 w-6 text-white" strokeWidth={2.6} />
-      </Link>
-      {right.map((t) => {
-        const active = t.match(pathname);
-        return (
-          <Link key={t.label} to={t.to} className="flex flex-col items-center justify-center gap-1 px-3 py-1.5 min-w-[56px]">
-            <t.icon className={`h-[22px] w-[22px] ${active ? "text-[var(--navy)]" : "text-muted-foreground"}`} strokeWidth={active ? 2.4 : 2} />
-            <span className={`text-[10px] font-semibold ${active ? "text-[var(--navy)]" : "text-muted-foreground"}`}>{t.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="min-h-screen">
-      {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 z-30 w-[260px] flex-col">
         <SidebarContent />
       </aside>
 
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="md:hidden fixed inset-0 z-50 bg-black/50"
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.aside
+              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              className="md:hidden fixed inset-y-0 left-0 z-50 w-[280px] flex flex-col"
+            >
+              <SidebarContent onNavigate={() => setMobileOpen(false)} />
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="absolute top-4 right-4 h-9 w-9 rounded-full bg-white/10 text-white flex items-center justify-center"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
       <div className="md:ml-[260px] flex flex-col min-h-screen">
-        <MobileHeader />
-        <main className="flex-1 px-4 md:px-8 py-5 md:py-8 pb-[96px] md:pb-8">
+        <MobileHeader onMenu={() => setMobileOpen(true)} />
+        <main className="flex-1 px-4 md:px-8 py-5 md:py-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
@@ -242,7 +209,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </motion.div>
           </AnimatePresence>
         </main>
-        <MobileBottomNav />
       </div>
     </div>
   );
