@@ -9,8 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SamplePdfTrainingRouteImport } from './routes/sample-pdf-training'
+import { Route as PassportUploadRouteImport } from './routes/passport-upload'
+import { Route as ModelConnectRouteImport } from './routes/model-connect'
+import { Route as InvoiceSystemRouteImport } from './routes/invoice-system'
 import { Route as EmployersRouteImport } from './routes/employers'
+import { Route as EmployeeFormsRouteImport } from './routes/employee-forms'
+import { Route as EmployeeAgreementRouteImport } from './routes/employee-agreement'
+import { Route as DocumentGeneratorRouteImport } from './routes/document-generator'
+import { Route as CountryEngineRouteImport } from './routes/country-engine'
+import { Route as ChecklistRouteImport } from './routes/checklist'
 import { Route as AgenciesRouteImport } from './routes/agencies'
+import { Route as AdminSettingsRouteImport } from './routes/admin-settings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocumentsIndexRouteImport } from './routes/documents.index'
 import { Route as DocumentsVariablesRouteImport } from './routes/documents.variables'
@@ -18,14 +28,64 @@ import { Route as DocumentsSavedRouteImport } from './routes/documents.saved'
 import { Route as DocumentsNewRouteImport } from './routes/documents.new'
 import { Route as DocumentsTemplateIdRouteImport } from './routes/documents.$templateId'
 
+const SamplePdfTrainingRoute = SamplePdfTrainingRouteImport.update({
+  id: '/sample-pdf-training',
+  path: '/sample-pdf-training',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PassportUploadRoute = PassportUploadRouteImport.update({
+  id: '/passport-upload',
+  path: '/passport-upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModelConnectRoute = ModelConnectRouteImport.update({
+  id: '/model-connect',
+  path: '/model-connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoiceSystemRoute = InvoiceSystemRouteImport.update({
+  id: '/invoice-system',
+  path: '/invoice-system',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmployersRoute = EmployersRouteImport.update({
   id: '/employers',
   path: '/employers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmployeeFormsRoute = EmployeeFormsRouteImport.update({
+  id: '/employee-forms',
+  path: '/employee-forms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmployeeAgreementRoute = EmployeeAgreementRouteImport.update({
+  id: '/employee-agreement',
+  path: '/employee-agreement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentGeneratorRoute = DocumentGeneratorRouteImport.update({
+  id: '/document-generator',
+  path: '/document-generator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CountryEngineRoute = CountryEngineRouteImport.update({
+  id: '/country-engine',
+  path: '/country-engine',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChecklistRoute = ChecklistRouteImport.update({
+  id: '/checklist',
+  path: '/checklist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgenciesRoute = AgenciesRouteImport.update({
   id: '/agencies',
   path: '/agencies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/admin-settings',
+  path: '/admin-settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,8 +121,18 @@ const DocumentsTemplateIdRoute = DocumentsTemplateIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin-settings': typeof AdminSettingsRoute
   '/agencies': typeof AgenciesRoute
+  '/checklist': typeof ChecklistRoute
+  '/country-engine': typeof CountryEngineRoute
+  '/document-generator': typeof DocumentGeneratorRoute
+  '/employee-agreement': typeof EmployeeAgreementRoute
+  '/employee-forms': typeof EmployeeFormsRoute
   '/employers': typeof EmployersRoute
+  '/invoice-system': typeof InvoiceSystemRoute
+  '/model-connect': typeof ModelConnectRoute
+  '/passport-upload': typeof PassportUploadRoute
+  '/sample-pdf-training': typeof SamplePdfTrainingRoute
   '/documents/$templateId': typeof DocumentsTemplateIdRoute
   '/documents/new': typeof DocumentsNewRoute
   '/documents/saved': typeof DocumentsSavedRoute
@@ -71,8 +141,18 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin-settings': typeof AdminSettingsRoute
   '/agencies': typeof AgenciesRoute
+  '/checklist': typeof ChecklistRoute
+  '/country-engine': typeof CountryEngineRoute
+  '/document-generator': typeof DocumentGeneratorRoute
+  '/employee-agreement': typeof EmployeeAgreementRoute
+  '/employee-forms': typeof EmployeeFormsRoute
   '/employers': typeof EmployersRoute
+  '/invoice-system': typeof InvoiceSystemRoute
+  '/model-connect': typeof ModelConnectRoute
+  '/passport-upload': typeof PassportUploadRoute
+  '/sample-pdf-training': typeof SamplePdfTrainingRoute
   '/documents/$templateId': typeof DocumentsTemplateIdRoute
   '/documents/new': typeof DocumentsNewRoute
   '/documents/saved': typeof DocumentsSavedRoute
@@ -82,8 +162,18 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin-settings': typeof AdminSettingsRoute
   '/agencies': typeof AgenciesRoute
+  '/checklist': typeof ChecklistRoute
+  '/country-engine': typeof CountryEngineRoute
+  '/document-generator': typeof DocumentGeneratorRoute
+  '/employee-agreement': typeof EmployeeAgreementRoute
+  '/employee-forms': typeof EmployeeFormsRoute
   '/employers': typeof EmployersRoute
+  '/invoice-system': typeof InvoiceSystemRoute
+  '/model-connect': typeof ModelConnectRoute
+  '/passport-upload': typeof PassportUploadRoute
+  '/sample-pdf-training': typeof SamplePdfTrainingRoute
   '/documents/$templateId': typeof DocumentsTemplateIdRoute
   '/documents/new': typeof DocumentsNewRoute
   '/documents/saved': typeof DocumentsSavedRoute
@@ -94,8 +184,18 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin-settings'
     | '/agencies'
+    | '/checklist'
+    | '/country-engine'
+    | '/document-generator'
+    | '/employee-agreement'
+    | '/employee-forms'
     | '/employers'
+    | '/invoice-system'
+    | '/model-connect'
+    | '/passport-upload'
+    | '/sample-pdf-training'
     | '/documents/$templateId'
     | '/documents/new'
     | '/documents/saved'
@@ -104,8 +204,18 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin-settings'
     | '/agencies'
+    | '/checklist'
+    | '/country-engine'
+    | '/document-generator'
+    | '/employee-agreement'
+    | '/employee-forms'
     | '/employers'
+    | '/invoice-system'
+    | '/model-connect'
+    | '/passport-upload'
+    | '/sample-pdf-training'
     | '/documents/$templateId'
     | '/documents/new'
     | '/documents/saved'
@@ -114,8 +224,18 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin-settings'
     | '/agencies'
+    | '/checklist'
+    | '/country-engine'
+    | '/document-generator'
+    | '/employee-agreement'
+    | '/employee-forms'
     | '/employers'
+    | '/invoice-system'
+    | '/model-connect'
+    | '/passport-upload'
+    | '/sample-pdf-training'
     | '/documents/$templateId'
     | '/documents/new'
     | '/documents/saved'
@@ -125,8 +245,18 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AgenciesRoute: typeof AgenciesRoute
+  ChecklistRoute: typeof ChecklistRoute
+  CountryEngineRoute: typeof CountryEngineRoute
+  DocumentGeneratorRoute: typeof DocumentGeneratorRoute
+  EmployeeAgreementRoute: typeof EmployeeAgreementRoute
+  EmployeeFormsRoute: typeof EmployeeFormsRoute
   EmployersRoute: typeof EmployersRoute
+  InvoiceSystemRoute: typeof InvoiceSystemRoute
+  ModelConnectRoute: typeof ModelConnectRoute
+  PassportUploadRoute: typeof PassportUploadRoute
+  SamplePdfTrainingRoute: typeof SamplePdfTrainingRoute
   DocumentsTemplateIdRoute: typeof DocumentsTemplateIdRoute
   DocumentsNewRoute: typeof DocumentsNewRoute
   DocumentsSavedRoute: typeof DocumentsSavedRoute
@@ -136,6 +266,34 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sample-pdf-training': {
+      id: '/sample-pdf-training'
+      path: '/sample-pdf-training'
+      fullPath: '/sample-pdf-training'
+      preLoaderRoute: typeof SamplePdfTrainingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/passport-upload': {
+      id: '/passport-upload'
+      path: '/passport-upload'
+      fullPath: '/passport-upload'
+      preLoaderRoute: typeof PassportUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/model-connect': {
+      id: '/model-connect'
+      path: '/model-connect'
+      fullPath: '/model-connect'
+      preLoaderRoute: typeof ModelConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoice-system': {
+      id: '/invoice-system'
+      path: '/invoice-system'
+      fullPath: '/invoice-system'
+      preLoaderRoute: typeof InvoiceSystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/employers': {
       id: '/employers'
       path: '/employers'
@@ -143,11 +301,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmployersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/employee-forms': {
+      id: '/employee-forms'
+      path: '/employee-forms'
+      fullPath: '/employee-forms'
+      preLoaderRoute: typeof EmployeeFormsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/employee-agreement': {
+      id: '/employee-agreement'
+      path: '/employee-agreement'
+      fullPath: '/employee-agreement'
+      preLoaderRoute: typeof EmployeeAgreementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/document-generator': {
+      id: '/document-generator'
+      path: '/document-generator'
+      fullPath: '/document-generator'
+      preLoaderRoute: typeof DocumentGeneratorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/country-engine': {
+      id: '/country-engine'
+      path: '/country-engine'
+      fullPath: '/country-engine'
+      preLoaderRoute: typeof CountryEngineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checklist': {
+      id: '/checklist'
+      path: '/checklist'
+      fullPath: '/checklist'
+      preLoaderRoute: typeof ChecklistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agencies': {
       id: '/agencies'
       path: '/agencies'
       fullPath: '/agencies'
       preLoaderRoute: typeof AgenciesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-settings': {
+      id: '/admin-settings'
+      path: '/admin-settings'
+      fullPath: '/admin-settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -197,8 +397,18 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AgenciesRoute: AgenciesRoute,
+  ChecklistRoute: ChecklistRoute,
+  CountryEngineRoute: CountryEngineRoute,
+  DocumentGeneratorRoute: DocumentGeneratorRoute,
+  EmployeeAgreementRoute: EmployeeAgreementRoute,
+  EmployeeFormsRoute: EmployeeFormsRoute,
   EmployersRoute: EmployersRoute,
+  InvoiceSystemRoute: InvoiceSystemRoute,
+  ModelConnectRoute: ModelConnectRoute,
+  PassportUploadRoute: PassportUploadRoute,
+  SamplePdfTrainingRoute: SamplePdfTrainingRoute,
   DocumentsTemplateIdRoute: DocumentsTemplateIdRoute,
   DocumentsNewRoute: DocumentsNewRoute,
   DocumentsSavedRoute: DocumentsSavedRoute,

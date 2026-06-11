@@ -60,7 +60,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           return (
             <Link
               key={label}
-              to={to}
+              to={to as "/"}
               onClick={onNavigate}
               className={`relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13.5px] font-medium transition-all mb-0.5 ${
                 isActive
