@@ -18,8 +18,8 @@ import html2canvas from "html2canvas";
 
 export const Route = createFileRoute("/documents/new")({
   head: () => ({ meta: [{ title: "Create Template — VisaHOBe" }] }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    templateId: typeof s.templateId === "string" ? s.templateId : undefined,
+  validateSearch: (s: Record<string, unknown>): { templateId?: string } => ({
+    ...(typeof s.templateId === "string" ? { templateId: s.templateId } : {}),
   }),
   component: NewTemplatePage,
 });
