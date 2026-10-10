@@ -165,3 +165,10 @@
 /* Sidebar scrollbar (dark) */
 .sidebar-navy ::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.1); }
 .sidebar-navy ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.2); }
+
+@media print {
+  body * { visibility: hidden; }
+  #a4-print, #a4-print * { visibility: visible; }
+  #a4-print { position: absolute; left: 0; top: 0; width: 210mm; }
+  @page { size: A4; margin: 0; }
+}
